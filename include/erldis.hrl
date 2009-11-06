@@ -1,0 +1,1 @@
+-record(redis, {socket,buffer=[],reply_caller,calls=0,remaining=0,pstate=empty,results=[]}).
