@@ -256,18 +256,16 @@ handle_info({tcp, Socket, Data}, State=#redis{calls=Calls}) ->
     inet:setopts(Socket, [{active, once}]),
     {noreply, NewState};
 handle_info({tcp_closed, Socket}, State=#redis{socket=Socket}) ->
-    {stop, erldis_client_tcp_host_socket_closed, State};
+	% japerk: shutdown Reason does not generate an error message
+    {stop, shutdown, State};
 handle_info(_Info, State) -> {noreply, State}.
 
 
 terminate(_Reason, State) ->
     case State#redis.socket of
-        undefined ->
-            pass;
-        Socket ->
-            gen_tcp:close(Socket)
-    end,
-    ok.
+        undefined -> ok;
+        Socket -> gen_tcp:close(Socket)
+    end.
 
 
 code_change(_OldVsn, State, _Extra) -> {ok, State}.

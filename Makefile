@@ -1,10 +1,10 @@
-LIBDIR=`erl -eval 'io:format("~s~n", [code:lib_dir()])' -s init stop -noshell`
+# store output so is only executed once
+LIBDIR=$(shell erl -eval 'io:format("~s~n", [code:lib_dir()])' -s init stop -noshell)
+# get application vsn from app file
+VSN=$(shell erl -pa ebin/ -eval 'application:load(erldis), {ok, Vsn} = application:get_key(erldis, vsn), io:format("~s~n", [Vsn])' -s init stop -noshell)
 
 all:
-	mkdir -p ebin/
-	(cd src;$(MAKE))
-	# test compile fails if eunit not present
-	#(cd test;$(MAKE))
+	@erl -make
 
 clean: clean_tests
 	(cd src;$(MAKE) clean)
@@ -24,12 +24,17 @@ testrun: all
 	mkdir -p ebin/
 	(cd test;$(MAKE) test)
 
-install: all
-	# original "mkdir -p {LIBDIR}/erldis-0.0.1/{ebin,include}"
-	# actually makes a directory called {ebin,include}
-	mkdir -p ${LIBDIR}/erldis-0.0.1/ebin
-	mkdir -p ${LIBDIR}/erldis-0.0.1/include
-	for i in ebin/*.beam; do install $$i $(LIBDIR)/erldis-0.0.1/$$i ; done
-	for i in include/*.hrl; do install $$i $(LIBDIR)/erldis-0.0.1/$$i ; done
+install: all	
+	mkdir -p $(ERL_LIBS)/erldis-$(VSN)/ebin
+	mkdir -p $(ERL_LIBS)/erldis-$(VSN)/include
+	for i in ebin/*.beam; do install $$i $(ERL_LIBS)/erldis-$(VSN)/$$i ; done
+	for i in include/*.hrl; do install $$i $(ERL_LIBS)/erldis-$(VSN)/$$i ; done
 	# also install .app file
-	install ebin/erldis.app $(LIBDIR)/erldis-0.0.1/ebin/erldis.app
+	install ebin/erldis.app $(ERL_LIBS)/erldis-$(VSN)/ebin/erldis.app
+	install ebin/erldis.appup $(ERL_LIBS)/erldis-$(VSN)/ebin/erldis.appup
+
+plt:
+	@dialyzer --build_plt --plt .plt -q -r . -I include/
+
+check: all
+	@dialyzer --check_plt --plt .plt -q -r . -I include/

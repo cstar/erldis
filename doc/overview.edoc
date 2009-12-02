@@ -1,0 +1,11 @@
+@doc Redis erlang client
+
+From dialtone on erldis_client:
+handle_info is the function that deals with parsing every line that comes from redis. save_or_reply is what is currently used to send replies back to the users.
+going through the State parameters:
+	* socket is of course the current connection to redis
+	* buffer contains intermediate results of parsing. it's used for multi-bulk replies. but it gets handy also for single bulk replies, although clearly it will be at most long 1 in those cases
+	* reply_caller is a function used to abstract the reply to the user. since the call is synchronous, the client might put itself in listening slower than redis can answer the request. when it manages to listen before the answer it adds a call that registers the call request and when it's done the system uses that function to send back the results. if it comes afterwards it simply gets the results in  save_or_reply the function checks for reply_caller and if it's not there it just appends to results
+	* the field remaining is for how many remaining packets you need to handle before the end of this call. this is also especially useful for multi-bulk replies. when a call is made it's set to 1 then the rest of the state machine figures out if only 1 packet will be received or how many more (the state machine is in erldis_proto)
+	* then the field calls is the number of calls that are waiting. basically at the end of a call remaining would go to 0. but if it goes to 0 the state machine would parse the remaining stuff. so using calls we keep track of how many more calls are incoming and until calls is 0 remaining is reset to 1 when it goes to 0 at the end of a parsing. and this is done in save_or_reply
+	* then pstate is the parser state, there can be only 4 right now error, hold, read, empty. error means that the next line is an error message. hold means that the next number is the number of multi-bulk items in the reply and is used to set the remaining field to something else than 1. read tells you how long the next field is so you need to read those bytes + 2 (\r\n are added by redis but not counted in the bytes... I fought hard to avoid this but salvatore didn't change it...). then empty means that the system is ready to accept a new reply. the function trim2 exists just to remove the \r\n at the end of the reply

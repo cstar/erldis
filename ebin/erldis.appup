@@ -1,0 +1,65 @@
+{"0.0.7", [
+	{"0.0.6", [
+		{load_module, erldis_sync_client},
+		{load_module, erldis_dict},
+		{load_module, erldis_list}
+	]},
+	{"0.0.5", [
+		{load_module, erldis_sync_client},
+		{load_module, erldis_sets},
+		{add_module, erldis_dict},
+		{add_module, erldis_list}
+	]},
+	{"0.0.4", [
+		{load_module, erldis_sync_client},
+		{load_module, erldis_sets}
+	]},
+	{"0.0.3", [
+		{load_module, erldis_sync_client},
+		{load_module, erldis_sets}
+	]},
+	{"0.0.2", [
+		{add_module, erldis_sync_client},
+		{load_module, erldis_sets}
+	]},
+	{"0.0.1", [
+		{add_module, erldis_client},
+		{add_module, erldis_proto},
+		{load_module, erldis},
+		{delete_module, client},
+		{delete_module, proto},
+		{add_module, erldis_sets}
+	]}
+], [
+	{"0.0.6", [
+		{load_module, erldis_sync_client},
+		{load_module, erldis_dict},
+		{load_module, erldis_list}
+	]},
+	{"0.0.5", [
+		{load_module, erldis_sync_client},
+		{load_module, erldis_sets},
+		{delete_module, erldis_dict},
+		{delete_module, erldis_list}
+	]},
+	{"0.0.4", [
+		{load_module, erldis_sync_client},
+		{load_module, erldis_sets}
+	]},
+	{"0.0.3", [
+		{load_module, erldis_sync_client},
+		{load_module, erldis_sets}
+	]},
+	{"0.0.2", [
+		{delete_module, erldis_sync_client},
+		{load_module, erldis_sets}
+	]},
+	{"0.0.1", [
+		{add_module, client},
+		{add_module, proto},
+		{load_module, erldis},
+		{delete_module, erldis_client},
+		{delete_module, erldis_proto},
+		{delete_module, erldis_sets}
+	]}
+]}.
