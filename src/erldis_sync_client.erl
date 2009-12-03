@@ -63,6 +63,20 @@ app_get_env(AppName, Varname, Default) ->
 			V
 	end.
 
+ensure_started(#redis{socket=undefined, host=Host, port=Port,timeout=Timeout}=State)->
+  Opts = [list, {active, once}, {packet, line}, {nodelay, true},
+			{send_timeout, Timeout}],
+	case gen_tcp:connect(Host, Port, Opts, Timeout) of
+	  {ok, Socket} ->
+	    error_logger:info_report([{erldis_sync_client, reconnected}, State]),
+	    State#redis{socket=Socket};
+	  {error, Why} ->
+	    error_logger:warning_report([{erldis_sync_client, unable_to_connect}, State]),
+      State
+  end;
+  
+ensure_started(State)->
+  State.
 %%%%%%%%%%%%%%%%%%
 %% call command %%
 %%%%%%%%%%%%%%%%%%
@@ -187,16 +201,17 @@ init([Host, Port]) ->
 			{stop, {socket_error, Why}};
 		{ok, Socket} ->
 			% calls is a queue instead of a count
-			{ok, #redis{socket=Socket, calls=queue:new()}}
+			{ok, #redis{socket=Socket, calls=queue:new(), host=Host, port=Port, timeout=Timeout}}
 	end.
 
 %%%%%%%%%%%%%%%%%
 %% handle_call %%
 %%%%%%%%%%%%%%%%%
 
-handle_call({send, Cmd}, From, State) ->
+handle_call({send, Cmd}, From, State1) ->
 	% NOTE: redis ignores sent commands it doesn't understand, which means
 	% we don't get a reply, which means callers will timeout
+	State = ensure_started(State1),
 	case gen_tcp:send(State#redis.socket, [Cmd|?EOL]) of
 		ok ->
 			%error_logger:info_report([{send, Cmd}, {from, From}]),
@@ -239,7 +254,6 @@ send_reply(State) ->
 
 parse_state(State, Socket, Data) ->
 	Parse = erldis_proto:parse(State#redis.pstate, trim2(Data)),
-	
 	case {State#redis.remaining-1, Parse} of
 		{0, error} ->
 			% next line is the error string
@@ -279,7 +293,7 @@ handle_info({tcp, Socket, Data}, State) ->
 	end;
 handle_info({tcp_closed, Socket}, State=#redis{socket=Socket}) ->
 	error_logger:warning_report([{erldis_sync_client, tcp_closed}, State]),
-	{stop, shutdown, State};
+	{noreply, State#redis{socket=undefined}};
 handle_info(_Info, State) ->
 	{noreply, State}.
 

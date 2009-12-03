@@ -103,7 +103,7 @@ init([Host, Port]) ->
             % japerk: correct error return is {stop, Reason}
             {stop, {socket_error, Why}};
         {ok, Socket} ->
-            {ok, #redis{socket=Socket, calls=0}}
+            {ok, #redis{socket=Socket, host=Host, port=Port, timeout=Timeout, calls=0}}
     end.
 
 handle_call({send, Cmd}, From, State) ->
