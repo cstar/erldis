@@ -15,7 +15,7 @@
 
 -include("erldis.hrl").
 
--export([scall/2, scall/3, call/2, call/3, stop/1, transact/2, info/1]).
+-export([scall/2, scall/3, call/2, call/3, stop/1, transact/1, transact/2, select/2, info/1]).
 -export([connect/0, connect/1, connect/2, connect/3, connect/4]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 		 terminate/2, code_change/3]).
@@ -63,23 +63,28 @@ app_get_env(AppName, Varname, Default) ->
 			V
 	end.
 
-ensure_started(#redis{socket=undefined, host=Host, port=Port,timeout=Timeout}=State)->
-  Opts = [list, {active, once}, {packet, line}, {nodelay, true},
-			{send_timeout, Timeout}],
+ensure_started(#redis{socket=undefined, host=Host, port=Port, timeout=Timeout}=State)->
+	Opts = [list, {active, once}, {packet, line}, {nodelay, true}, {send_timeout, Timeout}],
+	
 	case gen_tcp:connect(Host, Port, Opts, Timeout) of
-	  {ok, Socket} ->
-	    error_logger:info_report([{erldis_sync_client, reconnected}, State]),
-	    State#redis{socket=Socket};
-	  {error, Why} ->
-	    error_logger:warning_report([{erldis_sync_client, unable_to_connect}, State]),
-      State
-  end;
-  
+		{ok, Socket} ->
+			error_logger:info_report([{?MODULE, reconnected}, State]),
+			State#redis{socket=Socket};
+		{error, Why} ->
+			Report = [{?MODULE, unable_to_connect}, {error, Why}, State],
+			error_logger:warning_report(Report),
+			State
+	end;
 ensure_started(State)->
-  State.
+	State.
+
 %%%%%%%%%%%%%%%%%%
 %% call command %%
 %%%%%%%%%%%%%%%%%%
+sr_scall(Client, Cmd) -> sr_scall(Client, Cmd, []).
+sr_scall(Client, Cmd, Args) -> 
+  [R] = scall(Client, Cmd, Args),
+  R.
 
 % This is the simple send with a single row of commands
 scall(Client, Cmd) -> scall(Client, Cmd, []).
@@ -101,13 +106,21 @@ call(Client, Cmd, Args) ->
 		Retval -> Retval
 	end.
 
-stop(Client) -> gen_server:cast(Client, disconnect).
+% stop is synchronous so can be sure that client is shutdown
+stop(Client) -> gen_server:call(Client, disconnect).
 
-transact(DB, F) ->
-	% TODO: error handling in case of redis not being there, and catch errors
-	% in F so can still stop
-	{ok, Client} = connect(DB),
-	
+transact(F) ->
+	case connect() of
+		{error, Error} -> {error, Error};
+		{ok, Client} -> transact(Client, F)
+	end.
+
+transact(DB, F) when is_integer(DB) ->
+	case connect(DB) of
+		{error, Error} -> {error, Error};
+		{ok, Client} -> transact(Client, F)
+	end;
+transact(Client, F) when is_pid(Client) ->
 	try F(Client) of
 		Result -> stop(Client), Result
 	catch
@@ -115,6 +128,10 @@ transact(DB, F) ->
 		error:Result -> stop(Client), {error, Result};
 		exit:Result -> stop(Client), exit(Result)
 	end.
+
+select(Client, DB) ->
+	[ok] = scall(Client, select, [DB]),
+	Client.
 
 info(Client) ->
 	F = fun(Stat) ->
@@ -161,11 +178,8 @@ connect(Host) when is_list(Host) ->
 	connect(Host, Port);
 connect(DB) when is_integer(DB) ->
 	case connect() of
-		{ok, Client} ->
-			[ok] = scall(Client, select, [DB]),
-			{ok, Client};
-		Other ->
-			Other
+		{ok, Client} -> {ok, select(Client, DB)};
+		Other -> Other
 	end.
 
 connect(Host, Port) ->
@@ -179,11 +193,8 @@ connect(Host, Port, Options) ->
 
 connect(Host, Port, Options, DB) ->
 	case connect(Host, Port, Options) of
-		{ok, Client} ->
-			[ok] = scall(Client, select, [DB]),
-			{ok, Client};
-		Other ->
-			Other
+		{ok, Client} -> {ok, select(Client, DB)};
+		Other -> Other
 	end.
 
 init([Host, Port]) ->
@@ -194,9 +205,6 @@ init([Host, Port]) ->
 			{send_timeout, Timeout}],
 	% without timeout, default is infinity
 	case gen_tcp:connect(Host, Port, Opts, Timeout) of
-		{error, econnrefused} ->
-			% no redis server, return ignore for supervisor
-			ignore;
 		{error, Why} ->
 			{stop, {socket_error, Why}};
 		{ok, Socket} ->
@@ -221,6 +229,8 @@ handle_call({send, Cmd}, From, State1) ->
 			error_logger:error_report([{send, Cmd}, {error, Reason}]),
 			{stop, timeout, {error, Reason}, State}
 	end;
+handle_call(disconnect, _, State) ->
+	{stop, shutdown, shutdown, State};
 handle_call(_, _, State) ->
 	{reply, undefined, State}.
 

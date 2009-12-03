@@ -34,7 +34,7 @@ install: all
 	install ebin/erldis.appup $(ERL_LIBS)/erldis-$(VSN)/ebin/erldis.appup
 
 plt:
-	@dialyzer --build_plt --plt .plt -q -r . -I include/
+	@dialyzer --build_plt --output_plt .plt -q -r . -I include/
 
 check: all
 	@dialyzer --check_plt --plt .plt -q -r . -I include/

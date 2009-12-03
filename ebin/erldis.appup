@@ -1,4 +1,11 @@
-{"0.0.7", [
+{"0.0.11", [
+	{"0.0.10", [
+		{load_module, erldis_sync_client},
+		{load_module, erldis_client}
+	]},
+	{"0.0.9", [{load_module, erldis_sync_client}]},
+	{"0.0.8", [{load_module, erldis_sync_client}]},
+	{"0.0.7", [{load_module, erldis_sync_client}]},
 	{"0.0.6", [
 		{load_module, erldis_sync_client},
 		{load_module, erldis_dict},
@@ -31,6 +38,13 @@
 		{add_module, erldis_sets}
 	]}
 ], [
+	{"0.0.10", [
+		{load_module, erldis_sync_client},
+		{load_module, erldis_client}
+	]},
+	{"0.0.9", [{load_module, erldis_sync_client}]},
+	{"0.0.8", [{load_module, erldis_sync_client}]},
+	{"0.0.7", [{load_module, erldis_sync_client}]},
 	{"0.0.6", [
 		{load_module, erldis_sync_client},
 		{load_module, erldis_dict},

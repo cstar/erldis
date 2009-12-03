@@ -1,6 +1,6 @@
 {application, erldis, [
 	{description, "Erlang Redis application"},
-	{vsn, "0.0.7"},
+	{vsn, "0.0.11"},
 	{registered, [erldis_sup]},
 	{mod, {erldis_app, []}},
 	% TODO: include eunit?
