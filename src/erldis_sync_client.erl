@@ -15,7 +15,7 @@
 
 -include("erldis.hrl").
 
--export([scall/2, scall/3, call/2, call/3, stop/1, transact/1, transact/2, select/2, info/1]).
+-export([scall/2, scall/3, call/2, call/3, stop/1, transact/1, transact/2, select/2, info/1,  sr_scall/2, sr_scall/3]).
 -export([connect/0, connect/1, connect/2, connect/3, connect/4]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 		 terminate/2, code_change/3]).
