@@ -1,5 +1,5 @@
 # store output so is only executed once
-LIBDIR=$(shell erl -eval 'io:format("~s~n", [code:lib_dir()])' -s init stop -noshell)
+ERL_LIBS=$(shell erl -eval 'io:format("~s~n", [code:lib_dir()])' -s init stop -noshell)
 # get application vsn from app file
 VSN=$(shell erl -pa ebin/ -eval 'application:load(erldis), {ok, Vsn} = application:get_key(erldis, vsn), io:format("~s~n", [Vsn])' -s init stop -noshell)
 
