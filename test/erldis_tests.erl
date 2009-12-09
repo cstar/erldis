@@ -29,8 +29,12 @@ basic_test() ->
     true = erldis:del(Client, "hello"),
     true = erldis:del(Client, "foo"),
     false = erldis:exists(Client, "hello"),
-    false = erldis:exists(Client, "foo").
+    false = erldis:exists(Client, "foo"),
     
+    erldis:sadd(Client, "set", "toto"),
+    ["toto"] = erldis:smembers(Client, "set"),
+    erldis:srem(Client,"set", "toto"),
+    [] = erldis:smembers(Client, "set").
     
     %%% Commented out. Using the new erldis_set, erldis_list.
     %ok = erldis:set(Client, "pippo", "pluto"),

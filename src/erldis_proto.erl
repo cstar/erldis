@@ -16,6 +16,8 @@ parse(empty, "$-1") ->
     {read, nil};
 parse(empty, "*-1") ->
     {hold, nil};
+parse(empty, "*0") ->
+    {read, 0};
 parse(empty, "$" ++ BulkSize) ->
     {read, list_to_integer(BulkSize)};
 parse(read, "$" ++ BulkSize) ->
