@@ -3,6 +3,9 @@
 -compile(export_all).
 -define(EOL, "\r\n").
 
+
+
+
 %% helpers
 flatten({error, Message}) ->
     {error, Message};
@@ -25,7 +28,7 @@ connect(Host, Port, Options) ->
 
 %% Commands operating on string values
 internal_set_like(Client, Command, Key, Value) ->
-    case erldis_sync_client:call(Client, Command, [[Key, length(Value)], [Value]]) of
+    case erldis_sync_client:call(Client, Command, [[Key, size(Value)], [Value]]) of
       [{error, _}=Error]->Error;
       [R] when R == ok orelse R==nil orelse R == true orelse R == false -> R;
       R -> R
@@ -69,10 +72,10 @@ lrange(Client, Key, Start, End) -> erldis_sync_client:scall(Client, lrange, [Key
 ltrim(Client, Key, Start, End) -> erldis_sync_client:scall(Client, ltrim, [Key, Start, End]).
 lindex(Client, Key, Index) -> erldis_sync_client:scall(Client, lindex, [Key, Index]).
 lset(Client, Key, Index, Value) ->
-    erldis_client:send(Client, lset, [[Key, Index, length(Value)],
+    erldis_client:send(Client, lset, [[Key, Index, size(Value)],
                                [Value]]).
 lrem(Client, Key, Number, Value) ->
-    erldis_client:send(Client, lrem, [[Key, Number, length(Value)],
+    erldis_client:send(Client, lrem, [[Key, Number, size(Value)],
                                [Value]]).
 lpop(Client, Key) -> erldis_sync_client:scall(Client, lpop, [Key]).
 rpop(Client, Key) -> erldis_sync_client:scall(Client, rpop, [Key]).
@@ -82,7 +85,7 @@ rpop(Client, Key) -> erldis_sync_client:scall(Client, rpop, [Key]).
 %% Commands operating on sets
 sadd(Client, Key, Value) -> internal_set_like(Client, sadd, Key, Value).
 srem(Client, Key, Value) -> internal_set_like(Client, srem, Key, Value).
-smove(Client, SrcKey, DstKey, Member) -> erldis_sync_client:call(Client, smove, [[SrcKey, DstKey, length(Member)],
+smove(Client, SrcKey, DstKey, Member) -> erldis_sync_client:call(Client, smove, [[SrcKey, DstKey, size(Member)],
                                                                      [Member]]).
 scard(Client, Key) -> erldis_sync_client:scall(Client, scard, [Key]).
 sismember(Client, Key, Value) -> internal_set_like(Client, sismember, Key, Value).

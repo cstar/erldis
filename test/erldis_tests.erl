@@ -9,32 +9,30 @@
 %    false = is_process_alive(Client).
 %    
 utils_test() ->
-    ?assertEqual(erldis_client:str(1), "1"),
-    ?assertEqual(erldis_client:str(atom), "atom"),
-    ?assertEqual(erldis_client:format([[1, 2, 3]]), "1 2 3"),
-    ?assertEqual(erldis_client:format([[1,2,3], [4,5,6]]), "1 2 3\r\n4 5 6").
+    ?assertEqual(erldis_sync_client:str(1), <<"1">>),
+    ?assertEqual(erldis_sync_client:str(atom), <<"atom">>),
+    ?assertEqual(erldis_sync_client:format([[1, 2, 3]]), <<"1 2 3">>),
+    ?assertEqual(erldis_sync_client:format([[1,2,3], [4,5,6]]), <<"1 2 3\r\n4 5 6">>).
 
 basic_test() ->
     {ok, Client} = erldis:connect("localhost", 6379),
     erldis:flushall(Client),
-    nil = erldis:get(Client, "pippo"),
-    ok = erldis:set(Client, "hello", "kitty!"),
-    true = erldis:setnx(Client, "foo", "bar"),
-    false = erldis:setnx(Client, "foo", "bar"),
+    nil = erldis:get(Client, <<"pippo">>),
+    ok = erldis:set(Client, <<"hello">>, <<"kitty!">>),
+    true = erldis:setnx(Client, <<"foo">>, <<"bar">>),
+    false = erldis:setnx(Client, <<"foo">>, <<"bar">>),
 
-    true = erldis:exists(Client, "hello"),
-    true = erldis:exists(Client, "foo"),
-    "bar" = erldis:get(Client, "foo"),
-    ["kitty!", "bar"] = erldis:mget(Client, ["hello", "foo"]),
-    true = erldis:del(Client, "hello"),
-    true = erldis:del(Client, "foo"),
-    false = erldis:exists(Client, "hello"),
-    false = erldis:exists(Client, "foo"),
+    true = erldis:exists(Client, <<"hello">>),
+    true = erldis:exists(Client, <<"foo">>),
+    <<"bar">> = erldis:get(Client, <<"foo">>),
+    [<<"kitty!">>, <<"bar">>] = erldis:mget(Client, [<<"hello">>, <<"foo">>]),
+    true = erldis:del(Client, <<"foo">>),
+    false = erldis:exists(Client, <<"foo">>),
     
-    erldis:sadd(Client, "set", "toto"),
-    ["toto"] = erldis:smembers(Client, "set"),
-    erldis:srem(Client,"set", "toto"),
-    [] = erldis:smembers(Client, "set").
+    erldis:sadd(Client, <<"set">>, <<"toto">>),
+    [<<"toto">>] = erldis:smembers(Client, <<"set">>),
+    erldis:srem(Client,<<"set">>, <<"toto">>),
+    [] = erldis:smembers(Client, <<"set">>).
     
     %%% Commented out. Using the new erldis_set, erldis_list.
     %ok = erldis:set(Client, "pippo", "pluto"),

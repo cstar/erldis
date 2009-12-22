@@ -74,4 +74,4 @@ numeric_value([Val]) -> Val.
 scall(Client, Cmd, Args) -> erldis_sync_client:scall(Client, Cmd, Args).
 
 set_call(Client, Cmd, Key, Val) ->
-	erldis_sync_client:call(Client, Cmd, [[Key, length(Val)], [Val]]).
+	erldis_sync_client:call(Client, Cmd, [[Key, erlang:size(Val)], [Val]]).

@@ -128,7 +128,7 @@ foreach(I, F, Key, Client) ->
 		Item -> F(Item), foreach(I+1, F, Key, Client)
 	end.
 
-is_list(Key, Client) -> ["list"] == scall(Client, type, [Key]).
+is_list(Key, Client) -> [<<"list">>] == scall(Client, type, [Key]).
 
 % keysort
 
@@ -244,9 +244,9 @@ reverse(Key, Client) -> foldl(fun(Item, L) -> [Item | L] end, [], Key, Client).
 %%%%%%%%%%%%%
 
 call(Client, Cmd, Key, N, Val) ->
-	erldis_sync_client:call(Client, Cmd, [[Key, N, length(Val)], [Val]]).
+	erldis_sync_client:call(Client, Cmd, [[Key, N, size(Val)], [Val]]).
 
 scall(Client, Cmd, Args) -> erldis_sync_client:scall(Client, Cmd, Args).
 
 set_call(Client, Cmd, Key, Val) ->
-	erldis_sync_client:call(Client, Cmd, [[Key, length(Val)], [Val]]).
+	erldis_sync_client:call(Client, Cmd, [[Key, size(Val)], [Val]]).

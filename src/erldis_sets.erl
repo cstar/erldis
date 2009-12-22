@@ -14,7 +14,7 @@
 
 delete(Client) -> erldis_sync_client:stop(Client).
 
-is_set(Client, Key) -> ["set"] == scall(Client, type, [Key]).
+is_set(Client, Key) -> [<<"set">>] == scall(Client, type, [Key]).
 
 size(Client, Key) ->
 	case scall(Client, scard, [Key]) of
@@ -69,4 +69,4 @@ filter(Pred, Client, Key) -> lists:filter(Pred, to_list(Client, Key)).
 scall(Client, Cmd, Args) -> erldis_sync_client:scall(Client, Cmd, Args).
 
 set_call(Client, Cmd, Key, Val) ->
-	erldis_sync_client:call(Client, Cmd, [[Key, length(Val)], [Val]]).
+	erldis_sync_client:call(Client, Cmd, [[Key, erlang:size(Val)], [Val]]).

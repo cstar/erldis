@@ -19,7 +19,7 @@
 -export([connect/0, connect/1, connect/2, connect/3, connect/4]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 		 terminate/2, code_change/3]).
-
+-export([str/1, format/2, format/1, sformat/1]).
 -define(EOL, "\r\n").
 
 %%%%%%%%%%%%%
@@ -29,20 +29,21 @@
 % TODO: copied from erldis_client, should be abstracted & shared
 
 str(X) when is_list(X) ->
-	X;
+	list_to_binary(X);
 str(X) when is_atom(X) ->
-	atom_to_list(X);
+	list_to_binary(atom_to_list(X));
 str(X) when is_binary(X) ->
-	binary_to_list(X);
+	X;
 str(X) when is_integer(X) ->
-	integer_to_list(X);
+	list_to_binary(integer_to_list(X));
 str(X) when is_float(X) ->
-	float_to_list(X).
+	list_to_binary(float_to_list(X)).
 
 format([], Result) ->
-	string:join(lists:reverse(Result), ?EOL);
+  binary_join(lists:reverse(Result), <<?EOL>>);
+	
 format([Line|Rest], Result) ->
-	JoinedLine = string:join([str(X) || X <- Line], " "),
+	JoinedLine = binary_join([str(X) || X <- Line], <<" ">>),
 	format(Rest, [JoinedLine|Result]).
 
 format(Lines) ->
@@ -50,8 +51,17 @@ format(Lines) ->
 sformat(Line) ->
 	format([Line], []).
 
+binary_join(Array, Sep)->
+  R = lists:foldl(fun(Elem, Acc)->
+	  [ Elem,  Sep | Acc ]
+	end, [], Array),
+  [Sep|R2] = lists:reverse(R),
+	list_to_binary(R2).
+
 trim2({ok, S}) ->
-	string:substr(S, 1, length(S)-2);
+  Read = size(S)-2,
+  <<R:Read/bytes,_R/binary>> = S,
+  R;
 trim2(S) ->
 	trim2({ok, S}).
 
@@ -64,11 +74,10 @@ app_get_env(AppName, Varname, Default) ->
 	end.
 
 ensure_started(#redis{socket=undefined, host=Host, port=Port, timeout=Timeout}=State)->
-	Opts = [list, {active, once}, {packet, line}, {nodelay, true}, {send_timeout, Timeout}],
-	
+	Opts = [binary, {active, once}, {packet, line}, {nodelay, true}, {send_timeout, Timeout}],
 	case gen_tcp:connect(Host, Port, Opts, Timeout) of
 		{ok, Socket} ->
-			error_logger:info_report([{?MODULE, reconnected}, State]),
+			%error_logger:info_report([{?MODULE, reconnected}, State]),
 			State#redis{socket=Socket};
 		{error, Why} ->
 			Report = [{?MODULE, unable_to_connect}, {error, Why}, State],
@@ -99,7 +108,7 @@ scall(Client, Cmd, Args) ->
 call(Client, Cmd) -> call(Client, Cmd, []).
 
 call(Client, Cmd, Args) ->
-	SCmd = string:join([str(Cmd), format(Args)], " "),
+	SCmd = list_to_binary([str(Cmd),<<" ">>, format(Args)]),
 	
 	case gen_server:call(Client, {send, SCmd}) of
 		{error, Reason} -> throw({error, Reason});
@@ -142,7 +151,7 @@ info(Client) ->
 		end,
 	
 	[S] = scall(Client, info),
-	elists:mapfilter(F, string:tokens(S, "\r\n")).
+	elists:mapfilter(F, string:tokens(binary_to_list(S), "\r\n")).
 
 parse_stat("redis_version:"++Vsn) ->
 	{version, Vsn};
@@ -201,7 +210,7 @@ init([Host, Port]) ->
 	process_flag(trap_exit, true),
 	{ok, Timeout} = app_get_env(erldis, timeout, 500),
 	% presence of send_timeout_close Opt causes {error, badarg}
-	Opts = [list, {active, once}, {packet, line}, {nodelay, true},
+	Opts = [binary, {active, once}, {packet, line}, {nodelay, true},
 			{send_timeout, Timeout}],
 	% without timeout, default is infinity
 	case gen_tcp:connect(Host, Port, Opts, Timeout) of
@@ -249,6 +258,7 @@ recv_value(Socket, NBytes) ->
 	case gen_tcp:recv(Socket, NBytes+2) of
 		{ok, Packet} ->
 			inet:setopts(Socket, [{packet, line}]), % go back to line mode
+			%error_logger:info_report([{packet, Packet}]),
 			trim2({ok, Packet});
 		{error, Reason} ->
 			error_logger:error_report([{recv, NBytes}, {error, Reason}]),
@@ -264,6 +274,7 @@ send_reply(State) ->
 
 parse_state(State, Socket, Data) ->
 	Parse = erldis_proto:parse(State#redis.pstate, trim2(Data)),
+	%error_logger:info_report([{parse, Parse}, {state , State}]),
 	case {State#redis.remaining-1, Parse} of
 		{0, error} ->
 			% next line is the error string
