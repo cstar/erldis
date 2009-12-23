@@ -23,26 +23,26 @@ is_queue(Key, Client) -> is_list(Key, Client).
 is_empty(Key, Client) -> len(Key, Client) == 0.
 
 len(Key, Client) ->
-	case scall(Client, llen, [Key]) of
+	case scall(Client, <<"llen ">>, [Key]) of
 		[false] -> 0;
 		[true] -> 1;
 		[Len] -> Len
 	end.
 
 in(Item, Key, Client) ->
-	[ok] = set_call(Client, rpush, Key, Item).
+	[ok] = set_call(Client, <<"rpush ">>, Key, Item).
 
 in_r(Item, Key, Client) ->
-	[ok] = set_call(Client, lpush, Key, Item).
+	[ok] = set_call(Client, <<"lpush ">>, Key, Item).
 
 out(Key, Client) ->
-	case hd(scall(Client, lpop, [Key])) of
+	case hd(scall(Client, <<"lpop ">>, [Key])) of
 		nil -> empty;
 		Item -> {value, Item}
 	end.
 
 out_r(Key, Client) ->
-	case hd(scall(Client, rpop, [Key])) of
+	case hd(scall(Client, <<"rpop ">>, [Key])) of
 		nil -> empty;
 		Item -> {value, Item}
 	end.
@@ -100,11 +100,11 @@ peek_r(Key, Client) ->
 %% array like api %%
 %%%%%%%%%%%%%%%%%%%%
 
-get(I, Key, Client) -> hd(scall(Client, lindex, [Key, I])).
+get(I, Key, Client) -> hd(scall(Client, <<"lindex ">>, [Key, I])).
 
 is_array(Key, Client) -> is_list(Key, Client).
 
-set(I, Value, Key, Client) -> call(Client, lset, Key, I, Value).
+set(I, Value, Key, Client) -> call(Client, <<"lset ">>, Key, I, Value).
 
 size(Key, Client) -> len(Key, Client).
 
@@ -116,7 +116,7 @@ size(Key, Client) -> len(Key, Client).
 % any
 % append
 
-delete(Elem, Key, Client) -> call(Client, lrem, Key, 1, Elem).
+delete(Elem, Key, Client) -> call(Client, <<"lrem ">>, Key, 1, Elem).
 
 % dropwhile
 
@@ -128,7 +128,7 @@ foreach(I, F, Key, Client) ->
 		Item -> F(Item), foreach(I+1, F, Key, Client)
 	end.
 
-is_list(Key, Client) -> [<<"list">>] == scall(Client, type, [Key]).
+is_list(Key, Client) -> [<<"list">>] == scall(Client, <<"type ">>, [Key]).
 
 % keysort
 
@@ -171,10 +171,10 @@ sublist(Key, Client, Start, 1) ->
 	end;
 sublist(Key, Client, Start, Len) when Start > 0, Len > 1 ->
 	% erlang lists are 1-indexed
-	scall(Client, lrange, [Key, Start - 1, Start + Len - 2]);
+	scall(Client, <<"lrange ">>, [Key, Start - 1, Start + Len - 2]);
 sublist(Key, Client, Start, Len) when Start < 0, Len > 1 ->
 	% can give a negative start where -1 is the last element
-	scall(Client, lrange, [Key, Start, Start - Len + 1]).
+	scall(Client, <<"lrange ">>, [Key, Start, Start - Len + 1]).
 
 % sort
 % takewhile
@@ -228,7 +228,7 @@ foldr(I, F, Acc0, Key, Client) ->
 	end.
 
 from_list(L, Key, Client) ->
-	scall(Client, del, [Key]),
+	scall(Client, <<"del ">>, [Key]),
 	lists:foreach(fun(Item) -> in(Item, Key, Client) end, L).
 
 to_list(Key, Client) -> foldr(fun(Item, L) -> [Item | L] end, [], Key, Client).

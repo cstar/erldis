@@ -37,26 +37,35 @@ str(X) when is_binary(X) ->
 str(X) when is_integer(X) ->
 	list_to_binary(integer_to_list(X));
 str(X) when is_float(X) ->
-	list_to_binary(float_to_list(X)).
-
+	list_to_binary(float_to_list(X));
+str(X) ->
+  term_to_binary(X).
+  
 format([], Result) ->
-  binary_join(lists:reverse(Result), <<?EOL>>);
-	
+  Result;
+format([Line|Rest], <<>>) ->
+  JoinedLine = binary_join(Line, <<" ">>),
+  format(Rest, JoinedLine);
+  
 format([Line|Rest], Result) ->
-	JoinedLine = binary_join([str(X) || X <- Line], <<" ">>),
-	format(Rest, [JoinedLine|Result]).
+  Sep = <<?EOL>>,
+	JoinedLine = binary_join(Line, <<" ">>),
+	format(Rest, <<Result/binary,Sep/binary,JoinedLine/binary>>).
 
 format(Lines) ->
-	format(Lines, []).
+	format(Lines, <<>>).
 sformat(Line) ->
-	format([Line], []).
-
+	format([Line],<<>>).
+	
+binary_join([], _)-> <<>>;
 binary_join(Array, Sep)->
+  Sz = size(Sep),
   R = lists:foldl(fun(Elem, Acc)->
-	  [ Elem,  Sep | Acc ]
-	end, [], Array),
-  [Sep|R2] = lists:reverse(R),
-	list_to_binary(R2).
+    E2 = str(Elem),
+	  <<Acc/binary,Sep/binary,E2/binary>>
+	end, <<>>, Array),
+	<<_:Sz/bytes,Result/binary>> = R,
+	Result.
 
 trim2({ok, S}) ->
   Read = size(S)-2,
@@ -99,7 +108,8 @@ sr_scall(Client, Cmd, Args) ->
 scall(Client, Cmd) -> scall(Client, Cmd, []).
 
 scall(Client, Cmd, Args) ->
-	case gen_server:call(Client, {send, sformat([Cmd|Args])}) of
+  Args2 = sformat(Args),
+	case gen_server:call(Client, {send, <<Cmd/binary,Args2/binary>>}) of
 		{error, Reason} -> throw({error, Reason});
 		Retval -> Retval
 	end.
@@ -108,8 +118,8 @@ scall(Client, Cmd, Args) ->
 call(Client, Cmd) -> call(Client, Cmd, []).
 
 call(Client, Cmd, Args) ->
-	SCmd = list_to_binary([str(Cmd),<<" ">>, format(Args)]),
-	
+  Args2 = format(Args),
+	SCmd = <<Cmd/binary, Args2/binary>>,
 	case gen_server:call(Client, {send, SCmd}) of
 		{error, Reason} -> throw({error, Reason});
 		Retval -> Retval
@@ -254,7 +264,6 @@ handle_cast(_, State) ->
 
 recv_value(Socket, NBytes) ->
 	inet:setopts(Socket, [{packet, 0}]), % go into raw mode to read bytes
-	
 	case gen_tcp:recv(Socket, NBytes+2) of
 		{ok, Packet} ->
 			inet:setopts(Socket, [{packet, line}]), % go back to line mode

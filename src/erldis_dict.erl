@@ -5,21 +5,21 @@
 		 update_counter/2, update_counter/3]).
 
 % NOTE: use erldis_lists instead, fetch & find won't work for lists
-append(Key, Value, Client) -> set_call(Client, rpush, Key, Value).
+append(Key, Value, Client) -> set_call(Client, <<"rpush ">>, Key, Value).
 
 append_list(Key, Values, Client) ->
 	lists:foreach(fun(Value) -> append(Key, Value, Client) end, Values).
 
-erase(Key, Client) -> scall(Client, del, [Key]).
+erase(Key, Client) -> scall(Client, <<"del ">>, [Key]).
 
 fetch(Key, Client) ->
-	case scall(Client, get, [Key]) of
+	case scall(Client, <<"get ">>, [Key]) of
 		[nil] -> undefined;
 		[Value] -> Value
 	end.
 
 % NOTE: this is only useful if keys have a known prefix
-fetch_keys(Pattern, Client) -> scall(Client, keys, [Pattern]).
+fetch_keys(Pattern, Client) -> scall(Client, <<"keys ">>, [Pattern]).
 
 %filter(Pred, Client) -> ok.
 
@@ -33,13 +33,13 @@ find(Key, Client) ->
 
 %from_list(List, Client) -> ok.
 
-is_key(Key, Client) -> hd(scall(Client, exists, [Key])).
+is_key(Key, Client) -> hd(scall(Client, <<"exists ">>, [Key])).
 
 size(Client) ->
-	numeric_value(erldis_sync_client:scall(Client, dbsize)).
+	numeric_value(erldis_sync_client:scall(Client, <<"dbsize ">>)).
 
 store(Key, [], Client) -> erase(Key, Client);
-store(Key, Value, Client) -> set_call(Client, set, Key, Value).
+store(Key, Value, Client) -> set_call(Client, <<"set ">>, Key, Value).
 
 %to_list(Client) -> ok.
 
@@ -57,9 +57,9 @@ update_counter(Key, Client) -> update_counter(Key, 1, Client).
 
 % NOTE: this returns new count value, not a modified dict
 update_counter(Key, 1, Client) ->
-	numeric_value(scall(Client, incr, [Key]));
+	numeric_value(scall(Client, <<"incr ">>, [Key]));
 update_counter(Key, Incr, Client) ->
-	numeric_value(scall(Client, incrby, [Key, Incr])).
+	numeric_value(scall(Client, <<"incrby ">>, [Key, Incr])).
 
 %%%%%%%%%%%%%
 %% helpers %%

@@ -6,7 +6,7 @@ dict_test() ->
 	% setup
 	application:load(erldis),
 	{ok, Client} = erldis_sync_client:connect(),
-	?assertEqual(erldis_sync_client:scall(Client, flushdb), [ok]),
+	?assertEqual(erldis_sync_client:scall(Client, <<"flushdb">>), [ok]),
 	% empty dict
 	?assertEqual(0, erldis_dict:size(Client)),
 	?assertEqual(undefined, erldis_dict:fetch(<<"foo">>, Client)),
