@@ -27,40 +27,86 @@ connect(Host, Port, Options) ->
 %    erldis_sync_client:disconnect(Client).
 
 %% Commands operating on string values
-internal_set_like(Client, Command, Key, Value) ->
+internal_set_like(Client, Command, Key, Value) when is_binary(Key) andalso is_binary(Value) ->
+  Size = list_to_binary(integer_to_list(size(Value))),
+  Space = <<" ">>,
+  CR = <<"\r\n">>,
+  case erldis_sync_client:call(Client, <<Command/binary,Key/binary,Space/binary,Size/binary,CR/binary,Value/binary>>) of
+      [{error, _}=Error]->Error;
+      [R] when R == ok orelse R==nil orelse R == true orelse R == false -> R;
+      R -> R
+    end;
+  
+internal_set_like(Client, Command, Key, Value) when is_binary(Value)->
     case erldis_sync_client:call(Client, Command, [[Key, size(Value)], [Value]]) of
       [{error, _}=Error]->Error;
       [R] when R == ok orelse R==nil orelse R == true orelse R == false -> R;
       R -> R
-    end.
+    end;
+    
+internal_set_like(_Client, _Command, _Key, _Value) ->
+  {error, invalid_value}.
 
 %get_all_results(Client) -> erldis_client:get_all_results(Client).
 
-auth(Client, Password) -> erldis_sync_client:scall(Client, <<"auth ">>, [Password]).
+auth(Client, Password) -> 
+  Verb = <<"auth ">>,
+  erldis_sync_client:scall(Client, <<Verb/binary, Password/binary>>).
 
 set(Client, Key, Value) -> internal_set_like(Client, <<"set ">>, Key, Value).
-get(Client, Key) -> erldis_sync_client:sr_scall(Client, <<"get ">>, [Key]).
+
+get(Client, Key) -> 
+  Verb = <<"get ">>,
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, Key/binary>>).
+  
 getset(Client, Key, Value) -> internal_set_like(Client, <<"getset ">>, Key, Value).
 mget(Client, Keys) -> erldis_sync_client:scall(Client, <<"mget ">>, Keys).
 setnx(Client, Key, Value) -> internal_set_like(Client, <<"setnx ">>, Key, Value).
-incr(Client, Key) -> erldis_sync_client:sr_scall(Client, <<"incr ">>, [Key]).
+incr(Client, Key) -> 
+  Verb =  <<"incr ">>,
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, Key/binary>>).
 incrby(Client, Key, By) -> erldis_sync_client:sr_scall(Client, <<"incrby ">>, [Key, By]).
-decr(Client, Key) -> erldis_sync_client:sr_scall(Client, <<"decr ">>, [Key]).
+decr(Client, Key) -> 
+  Verb =  <<"decr ">>,
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, Key/binary>>).
 decrby(Client, Key, By) -> erldis_sync_client:sr_scall(Client, <<"decrby ">>, [Key, By]).
 
 
 
 %% Commands operating on every value
-exists(Client, Key) -> erldis_sync_client:sr_scall(Client, <<"exists ">>, [Key]).
-del(Client, Key) -> erldis_sync_client:sr_scall(Client, <<"del ">>, [Key]).
-type(Client, Key) -> erldis_sync_client:sr_scall(Client, <<"type ">>, [Key]).
-keys(Client, Pattern) -> erldis_sync_client:scall(Client, <<"keys ">>, [Pattern]).
-randomkey(Client, Key) -> erldis_sync_client:sr_scall(Client, <<"randomkey ">>, [Key]).
-rename(Client, OldKey, NewKey) -> erldis_sync_client:sr_scall(Client, <<"rename ">>, [OldKey, NewKey]).
-renamenx(Client, OldKey, NewKey) -> erldis_sync_client:sr_scall(Client, <<"renamenx ">>, [OldKey, NewKey]).
+exists(Client, Key) ->
+  Verb =  <<"exists ">>,
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, Key/binary>>).
+del(Client, Key) -> 
+  Verb =  <<"del ">>,
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, Key/binary>>).
+type(Client, Key) -> 
+  Verb = <<"type ">>,
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, Key/binary>>).
+keys(Client, Pattern) ->
+  Verb =  <<"keys ">>,
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, Pattern/binary>>).
+randomkey(Client, Key) ->
+  Verb =  <<"randomkey ">>,
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, Key/binary>>).
+rename(Client, OldKey, NewKey) -> 
+  Verb =  <<"rename ">>,
+  Space = <<" ">>,
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, OldKey/binary, Space/binary, NewKey/binary>>).
+renamenx(Client, OldKey, NewKey) -> 
+  Verb =  <<"renamenx ">>,
+  Space = <<" ">>,
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, OldKey/binary, Space/binary, NewKey/binary>>).
 dbsize(Client) -> erldis_sync_client:sr_scall(Client, <<"dbsize ">>).
-expire(Client, Key, Seconds) -> erldis_sync_client:sr_scall(Client, <<"expire ">>, [Key, Seconds]).
-ttl(Client, Key) -> erldis_sync_client:sr_scall(Client, <<"ttl ">>, [Key]).
+expire(Client, Key, Seconds) ->
+  Verb =  <<"expire ">>,
+  Space = <<" ">>,
+  S = list_to_binary(integer_to_list(Seconds)),
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, Key/binary, Space/binary, S/binary>>).
+  
+ttl(Client, Key) -> 
+  Verb =  <<"ttl ">>,
+  erldis_sync_client:sr_scall(Client, <<Verb/binary, Key/binary>>).
 
 
 
