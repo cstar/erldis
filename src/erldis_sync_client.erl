@@ -1,4 +1,4 @@
-%% @doc This is a gen_server very similar to erldis_client, but it does
+%% @doc This is a    very similar to erldis_client, but it does
 %% synchronous calls instead of async pipelining. Does so by keeping a queue
 %% of From pids in State.calls, then calls gen_server:reply when it receives
 %% handle_info({tcp, ...). Therefore, it must get commands on handle_call
@@ -11,7 +11,7 @@
 %% @author Jacob Perkins <japerk@gmail.com>
 -module(erldis_sync_client).
 
--behaviour(gen_server).
+-behaviour(gen_server2).
 
 -include("erldis.hrl").
 
@@ -54,9 +54,12 @@ format([Line|Rest], Result) ->
 
 format(Lines) ->
 	format(Lines, <<>>).
+
+sformat(<<>>)->
+  <<>>;
 sformat(Line) ->
 	format([Line],<<>>).
-	
+
 binary_join([], _)-> <<>>;
 binary_join(Array, Sep)->
   Sz = size(Sep),
@@ -82,11 +85,15 @@ app_get_env(AppName, Varname, Default) ->
 			V
 	end.
 
-ensure_started(#redis{socket=undefined, host=Host, port=Port, timeout=Timeout}=State)->
-	Opts = [binary, {active, once}, {packet, line}, {nodelay, true}, {send_timeout, Timeout}],
+ensure_started(#redis{socket=undefined, host=Host, port=Port, timeout=Timeout, db=DB}=State)->
+	Opts = [binary, {active, false}, {packet, line}, {nodelay, true}, {send_timeout, Timeout}],
 	case gen_tcp:connect(Host, Port, Opts, Timeout) of
 		{ok, Socket} ->
 			%error_logger:info_report([{?MODULE, reconnected}, State]),
+			End = <<?EOL>>,
+			gen_tcp:send(Socket, <<"select ",DB,End>>),
+			{ok, <<"+OK",_R/binary>>} = gen_tcp:recv(Socket, 10),
+			inet:set_opt({active, once}),
 			State#redis{socket=Socket};
 		{error, Why} ->
 			Report = [{?MODULE, unable_to_connect}, {error, Why}, State],
@@ -105,11 +112,11 @@ sr_scall(Client, Cmd, Args) ->
   R.
 
 % This is the simple send with a single row of commands
-scall(Client, Cmd) -> scall(Client, Cmd, []).
+scall(Client, Cmd) -> scall(Client, Cmd, <<>> ).
 
 scall(Client, Cmd, Args) ->
   Args2 = sformat(Args),
-	case gen_server:call(Client, {send, <<Cmd/binary,Args2/binary>>}) of
+	case gen_server2:call(Client, {send, <<Cmd/binary,Args2/binary>>}) of
 		{error, Reason} -> throw({error, Reason});
 		Retval -> Retval
 	end.
@@ -120,13 +127,13 @@ call(Client, Cmd) -> call(Client, Cmd, []).
 call(Client, Cmd, Args) ->
   Args2 = format(Args),
 	SCmd = <<Cmd/binary, Args2/binary>>,
-	case gen_server:call(Client, {send, SCmd}) of
+	case gen_server2:call(Client, {send, SCmd}) of
 		{error, Reason} -> throw({error, Reason});
 		Retval -> Retval
 	end.
 
 % stop is synchronous so can be sure that client is shutdown
-stop(Client) -> gen_server:call(Client, disconnect).
+stop(Client) -> gen_server2:call(Client, disconnect).
 
 transact(F) ->
 	case connect() of
@@ -149,7 +156,8 @@ transact(Client, F) when is_pid(Client) ->
 	end.
 
 select(Client, DB) ->
-	[ok] = scall(Client, select, [DB]),
+  DBB = list_to_binary(integer_to_list(DB)),
+	[ok] = scall(Client,<<"select ",DBB/binary>>),
 	Client.
 
 info(Client) ->
@@ -208,7 +216,7 @@ connect(Host, Port) ->
 connect(Host, Port, Options) ->
 	% not using start_link because caller may not want to crash if this
 	% server is shutdown
-	gen_server:start(?MODULE, [Host, Port], Options).
+	gen_server2:start(?MODULE, [Host, Port], Options).
 
 connect(Host, Port, Options, DB) ->
 	case connect(Host, Port, Options) of
@@ -238,12 +246,18 @@ init([Host, Port]) ->
 handle_call({send, Cmd}, From, State1) ->
 	% NOTE: redis ignores sent commands it doesn't understand, which means
 	% we don't get a reply, which means callers will timeout
+	End = <<?EOL>>,
 	State = ensure_started(State1),
-	case gen_tcp:send(State#redis.socket, [Cmd|?EOL]) of
+	case gen_tcp:send(State#redis.socket, [Cmd|End]) of
 		ok ->
 			%error_logger:info_report([{send, Cmd}, {from, From}]),
 			Queue = queue:in(From, State#redis.calls),
-			{noreply, State#redis{calls=Queue, remaining=1}};
+			case Cmd of
+			  <<"select ", DB/binary>> ->
+			    {noreply, State#redis{calls=Queue, remaining=1, db=DB}};
+			  _ ->
+			    {noreply, State#redis{calls=Queue, remaining=1}}
+			end;
 		{error, Reason} ->
 			error_logger:error_report([{send, Cmd}, {error, Reason}]),
 			{stop, timeout, {error, Reason}, State}
@@ -278,7 +292,7 @@ send_reply(State) ->
 	{{value, From}, Queue} = queue:out(State#redis.calls),
 	Reply = lists:reverse(State#redis.buffer),
 	%error_logger:info_report([{reply, Reply}, {to, From}]),
-	gen_server:reply(From, Reply),
+	gen_server2:reply(From, Reply),
 	State#redis{calls=Queue, buffer=[], pstate=empty}.
 
 parse_state(State, Socket, Data) ->
@@ -336,9 +350,8 @@ handle_info(_Info, State) ->
 
 terminate(_Reason, State) ->
 	% NOTE: if supervised with brutal_kill, may not be able to reply
-	R = fun(From) -> gen_server:reply(From, {error, closed}) end,
+	R = fun(From) -> gen_server2:reply(From, {error, closed}) end,
 	lists:foreach(R, queue:to_list(State#redis.calls)),
-	
 	case State#redis.socket of
 		undefined -> ok;
 		Socket -> gen_tcp:close(Socket)
