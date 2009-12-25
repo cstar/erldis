@@ -91,8 +91,13 @@ ensure_started(#redis{socket=undefined, host=Host, port=Port, timeout=Timeout, d
 		{ok, Socket} ->
 			%error_logger:info_report([{?MODULE, reconnected}, State]),
 			End = <<?EOL>>,
-			gen_tcp:send(Socket, <<"select ",DB,End>>),
-			{ok, <<"+OK",_R/binary>>} = gen_tcp:recv(Socket, 10),
+			case DB of 
+			  <<"0">> ->
+			    ok;
+			  _Id ->
+			    gen_tcp:send(Socket, <<"select ",DB,End>>),
+			    {ok, <<"+OK",_R/binary>>} = gen_tcp:recv(Socket, 10)
+			end,
 			inet:set_opt({active, once}),
 			State#redis{socket=Socket};
 		{error, Why} ->
