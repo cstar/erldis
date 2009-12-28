@@ -98,7 +98,7 @@ ensure_started(#redis{socket=undefined, host=Host, port=Port, timeout=Timeout, d
 			    gen_tcp:send(Socket, <<"select ",DB,End>>),
 			    {ok, <<"+OK",_R/binary>>} = gen_tcp:recv(Socket, 10)
 			end,
-			inet:setopts({active, once}),
+			inet:setopts(Socket, [{active, once}]),
 			State#redis{socket=Socket};
 		{error, Why} ->
 			Report = [{?MODULE, unable_to_connect}, {error, Why}, State],
