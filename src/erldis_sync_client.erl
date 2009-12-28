@@ -331,7 +331,12 @@ parse_state(State, Socket, Data) ->
 			State#redis{remaining=N, buffer=Buffer, pstate=read};
 		{0, Value} ->
 			% reply with Value
-			send_reply(State#redis{buffer=[Value]})
+			Buffer = [Value | State#redis.buffer],
+		  send_reply(State#redis{buffer=Buffer});
+		{N, Value} -> 
+		  Buffer = [Value | State#redis.buffer],
+		  %error_logger:info_report([{buffer, Buffer},{parsed, {N, Value}}, {state , State}]),
+		  State#redis{remaining=N, buffer=Buffer, pstate=read}
 	end.
 
 handle_info({tcp, Socket, Data}, State) ->
