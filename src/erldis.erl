@@ -60,9 +60,13 @@ get(Client, Key) ->
   erldis_sync_client:sr_scall(Client, <<Verb/binary, Key/binary>>).
 
 exec(Client, Fun)->
-  erldis_sync_client:scall(Client, <<"multi ">>),
-  Fun(Client),
-  erldis_sync_client:scall(Client, <<"exec ">>).
+  case erldis_sync_client:sr_scall(Client, <<"multi ">>) of
+  ok ->  
+    Fun(Client),
+    erldis_sync_client:scall(Client, <<"exec ">>);
+  _ ->
+    {error, unsupported}
+  end.
 
  
 getset(Client, Key, Value) -> internal_set_like(Client, <<"getset ">>, Key, Value).

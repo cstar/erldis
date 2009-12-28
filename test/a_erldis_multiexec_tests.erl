@@ -1,4 +1,4 @@
--module(erldis_multiexec_tests).
+-module(a_erldis_multiexec_tests).
 
 -include_lib("eunit/include/eunit.hrl").
 
@@ -12,8 +12,8 @@ me_test()->
 	end,
 	?assertEqual([ok, ok, <<"tata">>],erldis:exec(Client, Fun)),
 	Fun2 = fun(C)->
-	  erldis:set(C, <<"foo">>, <<"bar">>),
-	  erldis:set(C, <<"foo2">>, <<"bar2">>),
+	  erldis:sadd(C, <<"foo">>, <<"bar">>),
+	  erldis:srem(C, <<"foo">>, <<"bar">>),
 	  erldis:set(C, <<"foo3">>, <<"bar3">>)
 	end,
-	?assertEqual([ok, ok, ok],erldis:exec(Client, Fun2)).
+	?assertEqual([true, true, ok],erldis:exec(Client, Fun2)).

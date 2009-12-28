@@ -4,10 +4,14 @@
 
 parse(read, <<"+OK">>) ->
     ok;
+parse(read, <<":0">>) ->
+    false;
+parse(read, <<":1">>) ->
+    true;    
 parse(empty, <<"+OK">>) ->
     ok;
 parse(empty, <<"+QUEUED">>) ->
-    ok;
+    queued;
 parse(empty, <<"+PONG">>) ->
     pong;
 parse(empty, <<":0">>) ->
