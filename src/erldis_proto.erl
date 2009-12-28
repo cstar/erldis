@@ -2,7 +2,11 @@
 
 -export([parse/2]).
 
+parse(read, <<"+OK">>) ->
+    ok;
 parse(empty, <<"+OK">>) ->
+    ok;
+parse(empty, <<"+QUEUED">>) ->
     ok;
 parse(empty, <<"+PONG">>) ->
     pong;

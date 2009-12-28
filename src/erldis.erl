@@ -58,7 +58,13 @@ set(Client, Key, Value) -> internal_set_like(Client, <<"set ">>, Key, Value).
 get(Client, Key) -> 
   Verb = <<"get ">>,
   erldis_sync_client:sr_scall(Client, <<Verb/binary, Key/binary>>).
-  
+
+exec(Client, Fun)->
+  erldis_sync_client:scall(Client, <<"multi ">>),
+  Fun(Client),
+  erldis_sync_client:scall(Client, <<"exec ">>).
+
+ 
 getset(Client, Key, Value) -> internal_set_like(Client, <<"getset ">>, Key, Value).
 mget(Client, Keys) -> erldis_sync_client:scall(Client, <<"mget ">>, Keys).
 setnx(Client, Key, Value) -> internal_set_like(Client, <<"setnx ">>, Key, Value).
