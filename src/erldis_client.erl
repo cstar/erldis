@@ -1,6 +1,6 @@
 %% @doc This is a    very similar to erldis_client, but it does
 %% synchronous calls instead of async pipelining. Does so by keeping a queue
-%% of From pids in State.calls, then calls gen_server:reply when it receives
+%% of From pids in State.calls, then calls gen_server2:reply when it receives
 %% handle_info({tcp, ...). Therefore, it must get commands on handle_call
 %% instead of handle_cast, which requires direct command sending instead of
 %% using the API in erldis.
@@ -256,7 +256,7 @@ init([Host, Port]) ->
 %%%%%%%%%%%%%%%%%
 %% handle_call %%
 %%%%%%%%%%%%%%%%%
-handle_call(is_pipelined, From, #redis{pipeline=P}=State)->
+handle_call(is_pipelined, _From, #redis{pipeline=P}=State)->
   {reply, P, State};
 
 handle_call(get_all_results, From, #redis{pipeline=true, calls=Calls} = State) ->
@@ -269,7 +269,7 @@ handle_call(get_all_results, From, #redis{pipeline=true, calls=Calls} = State) -
         _ ->
             % We are here earlier than results came, so just make
             % ourselves wait until stuff is ready.
-            {noreply, State#redis{reply_caller=fun(V) -> gen_server:reply(From, V) end}}
+            {noreply, State#redis{reply_caller=fun(V) -> gen_server2:reply(From, V) end}}
     end;
 
 
@@ -339,7 +339,7 @@ send_reply(#redis{pipeline=true,calls=Calls,results=Results, reply_caller=ReplyC
     [V] when is_atom(V) -> V;
     R -> R
   end,
-  {{value, From}, Queue} = queue:out(State#redis.calls),
+  {{value, _From}, Queue} = queue:out(Calls),
   case queue:len(Queue) of
     0 ->
       %error_logger:info_report([sendreply, {state, State}, {queue,queue:len(Queue) }]),
