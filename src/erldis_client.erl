@@ -122,18 +122,26 @@ scall(Client, Cmd) -> scall(Client, Cmd, <<>> ).
 
 scall(Client, Cmd, Args) ->
   Args2 = sformat(Args),
-	case gen_server2:call(Client, {send, <<Cmd/binary,Args2/binary>>}) of
+	M = case gen_server2:call(Client, is_pipelined) of
+	  true -> cast;
+	  _ -> call
+	end,
+	case apply(gen_server2,M,[Client,{send, <<Cmd/binary,Args2/binary>>}]) of
 		{error, Reason} -> throw({error, Reason});
 		Retval -> Retval
 	end.
-
+	
 % This is the complete send with multiple rows
 call(Client, Cmd) -> call(Client, Cmd, []).
 
 call(Client, Cmd, Args) ->
   Args2 = format(Args),
 	SCmd = <<Cmd/binary, Args2/binary>>,
-	case gen_server2:call(Client, {send, SCmd}) of
+	M = case gen_server2:call(Client, is_pipelined) of
+	  true -> cast;
+	  _ -> call
+	end,
+	case apply(gen_server2,M,[Client, {send, SCmd}]) of
 		{error, Reason} -> throw({error, Reason});
 		Retval -> Retval
 	end.
@@ -177,23 +185,23 @@ info(Client) ->
 	[S] = scall(Client, info),
 	elists:mapfilter(F, string:tokens(binary_to_list(S), "\r\n")).
 
-parse_stat("redis_version:"++Vsn) ->
+parse_stat(<<"redis_version:",Vsn/binary>>) ->
 	{version, Vsn};
-parse_stat("uptime_in_seconds:"++Val) ->
+parse_stat(<<"uptime_in_seconds:",Val/binary>>) ->
 	{uptime, list_to_integer(Val)};
-parse_stat("connected_clients:"++Val) ->
+parse_stat(<<"connected_clients:",Val/binary>>) ->
 	{clients, list_to_integer(Val)};
-parse_stat("connected_slaves:"++Val) ->
+parse_stat(<<"connected_slaves:",Val/binary>>) ->
 	{slaves, list_to_integer(Val)};
-parse_stat("used_memory:"++Val) ->
+parse_stat(<<"used_memory:",Val/binary>>) ->
 	{memory, list_to_integer(Val)};
-parse_stat("changes_since_last_save:"++Val) ->
+parse_stat(<<"changes_since_last_save:",Val/binary>>) ->
 	{changes, list_to_integer(Val)};
-parse_stat("last_save_time:"++Val) ->
+parse_stat(<<"last_save_time:",Val/binary>>) ->
 	{last_save, list_to_integer(Val)};
-parse_stat("total_connections_received:"++Val) ->
+parse_stat(<<"total_connections_received:",Val/binary>>) ->
 	{connections, list_to_integer(Val)};
-parse_stat("total_commands_processed:"++Val) ->
+parse_stat(<<"total_commands_processed:",Val/binary>>) ->
 	{commands, list_to_integer(Val)};
 parse_stat(_) ->
 	undefined.
@@ -248,7 +256,11 @@ init([Host, Port]) ->
 %%%%%%%%%%%%%%%%%
 %% handle_call %%
 %%%%%%%%%%%%%%%%%
+handle_call(is_pipelined, From, #redis{pipeline=P}=State)->
+  {reply, P, State};
+
 handle_call(get_all_results, From, #redis{pipeline=true, calls=Calls} = State) ->
+    %error_logger:info_report([{state, State}, {calls, queue:len(Calls)}]),
     case queue:len(Calls) of
         0 ->
             % answers came earlier than we could start listening...
@@ -260,18 +272,7 @@ handle_call(get_all_results, From, #redis{pipeline=true, calls=Calls} = State) -
             {noreply, State#redis{reply_caller=fun(V) -> gen_server:reply(From, V) end}}
     end;
 
-handle_call({send, Cmd}, From, #redis{remaining=Remaining, 
-                                      calls=Calls,pipeline=true} = State1) ->
-  End = <<?EOL>>,
-  State = ensure_started(State1),
-  Queue = queue:in(From, Calls),
-  gen_tcp:send(State#redis.socket, [Cmd|End]),
-    case Remaining of
-        0 ->
-            {reply, ok, State#redis{remaining=1, calls=Queue}};
-        _ ->
-            {reply, ok, State#redis{calls=Queue}}
-    end;
+
   
 handle_call({send, Cmd}, From, State1) ->
 	% NOTE: redis ignores sent commands it doesn't understand, which means
@@ -301,6 +302,19 @@ handle_cast({pipelining, Bool}, State) ->
   {noreply, State#redis{pipeline=Bool}};
 handle_cast(disconnect, State) ->
 	{stop, shutdown, State};
+	
+handle_cast({send, Cmd},#redis{remaining=Remaining, 
+                                      calls=Calls} = State1) ->
+  End = <<?EOL>>,
+  State = ensure_started(State1),
+  Queue = queue:in(async, Calls),
+  gen_tcp:send(State#redis.socket, [Cmd|End]),
+  case Remaining of
+      0 ->
+          {noreply, State#redis{remaining=1, calls=Queue}};
+      _ ->
+          {noreply,State#redis{calls=Queue}}
+  end;
 handle_cast(_, State) ->
 	{noreply, State}.
 
@@ -321,29 +335,34 @@ recv_value(Socket, NBytes) ->
 	end.
 
 send_reply(#redis{pipeline=true,calls=Calls,results=Results, reply_caller=ReplyCaller}=State)->
-  Result = lists:reverse(State#redis.buffer),
-  case queue:len(Calls) of
+  Result = case lists:reverse(State#redis.buffer) of
+    [V] when is_atom(V) -> V;
+    R -> R
+  end,
+  {{value, From}, Queue} = queue:out(State#redis.calls),
+  case queue:len(Queue) of
     0 ->
+      %error_logger:info_report([sendreply, {state, State}, {queue,queue:len(Queue) }]),
       FullResults = [Result|Results],
-            NewState = case ReplyCaller of
-                undefined ->
-                    State#redis{results=FullResults};
-                _ ->
-                    ReplyCaller(lists:reverse(FullResults)),
-                    State#redis{results=[]}
-            end,
-            NewState#redis{remaining=0, pstate=empty,
-                           reply_caller=undefined, buffer=[],
-                           calls=Calls};
+      NewState = case ReplyCaller of
+          undefined ->
+              State#redis{results=FullResults};
+          _ ->
+              ReplyCaller(lists:reverse(FullResults)),
+              State#redis{results=[]}
+      end,
+      NewState#redis{remaining=0, pstate=empty,
+                     reply_caller=undefined, buffer=[],
+                     calls=Queue};
     _ ->
-      {{value, From}, Queue} = queue:out(State#redis.calls),
+      %error_logger:info_report([sendreply, {state, State}, {queue,queue:len(Queue) }]),
       State#redis{results=[Result|Results], remaining=1, pstate=empty, buffer=[], calls=Queue}
   end;
 
 send_reply(State) ->
 	{{value, From}, Queue} = queue:out(State#redis.calls),
 	Reply = lists:reverse(State#redis.buffer),
-	%error_logger:info_report([{reply, Reply}, {to, From}]),
+	%error_logger:info_report([sendreply_no_pipeline, {state, State}, {queue,queue:len(Queue) }]),
 	gen_server2:reply(From, Reply),
 	State#redis{calls=Queue, buffer=[], pstate=empty}.
 
@@ -390,7 +409,7 @@ parse_state(State, Socket, Data) ->
 handle_info({tcp, Socket, Data}, State) ->
 	case (catch parse_state(State, Socket, Data)) of
 		{error, Reason} ->
-			error_logger:error_report([{parse_state, Data}, {error, Reason}]),
+			%error_logger:error_report([{parse_state, Data}, {error, Reason}]),
 			{stop, Reason, State};
 		NewState ->
 			inet:setopts(Socket, [{active, once}]),

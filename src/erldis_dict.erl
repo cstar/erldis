@@ -36,7 +36,7 @@ find(Key, Client) ->
 is_key(Key, Client) -> hd(scall(Client, <<"exists ">>, [Key])).
 
 size(Client) ->
-	numeric_value(erldis_client:scall(Client, <<"dbsize ">>)).
+	numeric_value(erldis_sync_client:scall(Client, <<"dbsize ">>)).
 
 store(Key, [], Client) -> erase(Key, Client);
 store(Key, Value, Client) -> set_call(Client, <<"set ">>, Key, Value).
@@ -71,7 +71,7 @@ numeric_value([Val]) -> Val.
 
 % TODO: copied from erldis_sets, abstract if possible, maybe use a macro
 
-scall(Client, Cmd, Args) -> erldis_client:scall(Client, Cmd, Args).
+scall(Client, Cmd, Args) -> erldis_sync_client:scall(Client, Cmd, Args).
 
 set_call(Client, Cmd, Key, Val) ->
-	erldis_client:call(Client, Cmd, [[Key, erlang:size(Val)], [Val]]).
+	erldis_sync_client:call(Client, Cmd, [[Key, erlang:size(Val)], [Val]]).

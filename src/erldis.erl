@@ -67,7 +67,10 @@ get(Client, Key) ->
 exec(Client, Fun)->
   case erldis_client:sr_scall(Client, <<"multi ">>) of
   ok ->  
+    erldis:set_pipelining(Client,true),
     Fun(Client),
+    erldis:get_all_results(Client),
+    erldis:set_pipelining(Client,false),
     erldis_client:scall(Client, <<"exec ">>);
   _ ->
     {error, unsupported}

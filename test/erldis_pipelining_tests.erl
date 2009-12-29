@@ -9,6 +9,7 @@ pipelining_test()->
   erldis:set_pipelining(Client, true),
   erldis:get(Client, <<"pippo">>),
   erldis:set(Client, <<"hello">>, <<"kitty!">>),
+  erldis:get(Client, <<"hello">>),
   erldis:setnx(Client, <<"foo">>, <<"bar">>),
   erldis:setnx(Client, <<"foo">>, <<"bar">>),
-  [ok, nil, ok, true, false] = erldis:get_all_results(Client).
+  ?assertEqual([nil, ok, [<<"kitty!">>],true, false],erldis:get_all_results(Client)).
