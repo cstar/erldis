@@ -4,7 +4,7 @@
 
 me_test()->	
   application:load(erldis),
-	{ok, Client} = erldis_sync_client:connect(),
+	{ok, Client} = erldis_client:connect(),
 	Fun = fun(C)->
 	  erldis:set(C, <<"toto">>, <<"tata">>),
 	  erldis:set(C, <<"toto2">>, <<"tata2">>),

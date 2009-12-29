@@ -1,4 +1,4 @@
-%% @doc sets like interface to redis. Uses erldis_sync_client to ensure
+%% @doc sets like interface to redis. Uses erldis_client to ensure
 %% synchronous results.
 %%
 %% @author Jacob Perkins <japerk@gmail.com>
@@ -12,7 +12,7 @@
 %% sets-like api %%
 %%%%%%%%%%%%%%%%%%%
 
-delete(Client) -> erldis_sync_client:stop(Client).
+delete(Client) -> erldis_client:stop(Client).
 
 is_set(Client, Key) -> [<<"set">>] == scall(Client, <<"type ">>, [Key]).
 
@@ -66,7 +66,7 @@ filter(Pred, Client, Key) -> lists:filter(Pred, to_list(Client, Key)).
 
 % TODO: handle {error, Reason}. throw exception?
 
-scall(Client, Cmd, Args) -> erldis_sync_client:scall(Client, Cmd, Args).
+scall(Client, Cmd, Args) -> erldis_client:scall(Client, Cmd, Args).
 
 set_call(Client, Cmd, Key, Val) ->
-	erldis_sync_client:call(Client, Cmd, [[Key, erlang:size(Val)], [Val]]).
+	erldis_client:call(Client, Cmd, [[Key, erlang:size(Val)], [Val]]).

@@ -20,7 +20,7 @@ queue_test() ->
 	?assertEqual({value, <<"x">>}, erldis_list:out(<<"foo">>, Client)),
 	?assertEqual(0, erldis_list:len(<<"foo">>, Client)),
 	?assertEqual(empty, erldis_list:out(<<"foo">>, Client)),
-	erldis_sync_client:stop(Client).
+	erldis_client:stop(Client).
 
 extended_queue_test() ->
 	Client = setup(),
@@ -38,7 +38,7 @@ extended_queue_test() ->
 	erldis_list:drop(<<"foo">>, Client),
 	erldis_list:drop_r(<<"foo">>, Client),
 	?assertEqual(0, erldis_list:len(<<"foo">>, Client)),
-	erldis_sync_client:stop(Client).
+	erldis_client:stop(Client).
 
 array_test() ->
 	Client = setup(),
@@ -50,7 +50,7 @@ array_test() ->
 	?assertEqual(2, erldis_list:size(<<"foo">>, Client)),
 	?assertEqual({value, <<"a">>}, erldis_list:out(<<"foo">>, Client)),
 	?assertEqual({value, <<"x">>}, erldis_list:out(<<"foo">>, Client)),
-	erldis_sync_client:stop(Client).
+	erldis_client:stop(Client).
 
 lists_test() ->
 	Client = setup(),
@@ -69,7 +69,7 @@ lists_test() ->
 	erldis_list:drop(<<"foo">>, Client),
 	erldis_list:drop(<<"foo">>, Client),
 	erldis_list:drop(<<"foo">>, Client),
-	erldis_sync_client:stop(Client).
+	erldis_client:stop(Client).
 	% this last call always produces a timeout error
 	%?assertEqual([], erldis_list:sublist(<<"foo">>, Client, 3)).
 	% TODO: test negative sublist start index
@@ -89,7 +89,7 @@ foreach_test() ->
 		end,
 	
 	erldis_list:foreach(F, <<"foo">>, Client),
-	erldis_sync_client:stop(Client).
+	erldis_client:stop(Client).
 
 merge_test() ->
 	Client = setup(),
@@ -112,7 +112,7 @@ merge_test() ->
 	?assertEqual(length(Merged2), erldis_list:len(<<"foo">>, Client)),
 	?assertEqual(Merged2, erldis_list:to_list(<<"foo">>, Client)),
 	
-	erldis_sync_client:stop(Client).
+	erldis_client:stop(Client).
 
 common_test() ->
 	Client = setup(),
@@ -129,7 +129,7 @@ common_test() ->
 	erldis_list:from_list(L2, <<"foo">>, Client),
 	?assertEqual(length(L2), erldis_list:len(<<"foo">>, Client)),
 	?assertEqual(L2, erldis_list:to_list(<<"foo">>, Client)),
-	erldis_sync_client:stop(Client).
+	erldis_client:stop(Client).
 
 extra_queue_test() ->
 	Client = setup(),
@@ -146,11 +146,11 @@ extra_queue_test() ->
 	
 	erldis_list:out_foreach(F, <<"foo">>, Client),
 	?assertEqual(0, erldis_list:len(<<"foo">>, Client)),
-	erldis_sync_client:stop(Client).
+	erldis_client:stop(Client).
 
 setup() ->
 	% setup
 	application:load(erldis),
-	{ok, Client} = erldis_sync_client:connect(),
-	?assertEqual(erldis_sync_client:scall(Client, <<"flushdb ">>), [ok]),
+	{ok, Client} = erldis_client:connect(),
+	?assertEqual(erldis_client:scall(Client, <<"flushdb ">>), [ok]),
 	Client.

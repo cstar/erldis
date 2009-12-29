@@ -9,10 +9,10 @@
 %    false = is_process_alive(Client).
 %    
 utils_test() ->
-    ?assertEqual(erldis_sync_client:str(1), <<"1">>),
-    ?assertEqual(erldis_sync_client:str(atom), <<"atom">>),
-    ?assertEqual(erldis_sync_client:format([[1, 2, 3]]), <<"1 2 3">>),
-    ?assertEqual(erldis_sync_client:format([[1,2,3], [4,5,6]]), <<"1 2 3\r\n4 5 6">>).
+    ?assertEqual(erldis_client:str(1), <<"1">>),
+    ?assertEqual(erldis_client:str(atom), <<"atom">>),
+    ?assertEqual(erldis_client:format([[1, 2, 3]]), <<"1 2 3">>),
+    ?assertEqual(erldis_client:format([[1,2,3], [4,5,6]]), <<"1 2 3\r\n4 5 6">>).
 
 basic_test() ->
     {ok, Client} = erldis:connect("localhost", 6379),

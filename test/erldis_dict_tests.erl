@@ -5,8 +5,8 @@
 dict_test() ->
 	% setup
 	application:load(erldis),
-	{ok, Client} = erldis_sync_client:connect(),
-	?assertEqual(erldis_sync_client:scall(Client, <<"flushdb">>), [ok]),
+	{ok, Client} = erldis_client:connect(),
+	?assertEqual(erldis_client:scall(Client, <<"flushdb">>), [ok]),
 	% empty dict
 	?assertEqual(0, erldis_dict:size(Client)),
 	?assertEqual(undefined, erldis_dict:fetch(<<"foo">>, Client)),
@@ -27,4 +27,4 @@ dict_test() ->
 	?assertEqual(1, erldis_dict:update_counter(<<"count">>, Client)),
 	?assertEqual(3, erldis_dict:update_counter(<<"count">>, 2, Client)),
 	erldis_dict:erase(<<"count">>, Client),
-	erldis_sync_client:stop(Client).
+	erldis_client:stop(Client).

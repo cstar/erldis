@@ -5,8 +5,8 @@
 sets_test() ->
 	% setup
 	application:load(erldis),
-	{ok, Client} = erldis_sync_client:connect(),
-	?assertEqual(erldis_sync_client:scall(Client, <<"flushdb">>), [ok]),
+	{ok, Client} = erldis_client:connect(),
+	?assertEqual(erldis_client:scall(Client, <<"flushdb">>), [ok]),
 	% non existent set
 	?assertEqual(erldis_sets:is_set(Client, <<"foo">>), false),
 	?assertEqual(erldis_sets:to_list(Client, <<"foo">>), []),
@@ -31,5 +31,5 @@ sets_test() ->
 	Elems = [<<"a">>, <<"b">>, <<"c">>],
 	erldis_sets:from_list(Client, <<"foo">>, Elems),
 	?assertEqual(lists:sort(erldis_sets:to_list(Client, <<"foo">>)), Elems),
-	erldis_sync_client:stop(Client).
+	erldis_client:stop(Client).
 	% TODO: test union, intersection, is_disjoint, subtract.
