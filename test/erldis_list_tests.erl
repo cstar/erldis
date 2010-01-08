@@ -74,6 +74,38 @@ lists_test() ->
 	%?assertEqual([], erldis_list:sublist(<<"foo">>, Client, 3)).
 	% TODO: test negative sublist start index
 
+blocking_queue_test() ->
+    Client = setup(),
+
+    erldis:rpush(Client, <<"a">>, <<"value">>),
+    ?assertEqual([<<"a">>, <<"value">>], erldis:blpop(Client, [<<"a">>, <<"b">>])),
+    erldis:rpush(Client, <<"b">>, <<"value">>),
+    ?assertEqual([<<"b">>, <<"value">>], erldis:blpop(Client, [<<"a">>, <<"b">>])),
+    erldis:rpush(Client, <<"a">>, <<"first">>),
+    erldis:rpush(Client, <<"a">>, <<"second">>),
+    ?assertEqual([<<"a">>, <<"first">>], erldis:blpop(Client, [<<"a">>, <<"b">>])),
+    ?assertEqual([<<"a">>, <<"second">>], erldis:blpop(Client, [<<"a">>, <<"b">>])),
+
+    spawn_link(fun blocking_queue_sender/0),
+    ?assertEqual([<<"a">>, <<1>>], erldis:blpop(Client, [<<"a">>, <<"b">>], 1000)),
+    ?assertEqual([<<"b">>, <<1>>], erldis:blpop(Client, [<<"a">>, <<"b">>], 1000)),
+    ?assertEqual([<<"a">>, <<2>>], erldis:blpop(Client, [<<"a">>, <<"b">>], 1000)),
+    ?assertEqual([], erldis:blpop(Client, [<<"a">>, <<"b">>], 1000)),
+    ?assertEqual([<<"a">>, <<3>>], erldis:blpop(Client, [<<"a">>, <<"b">>], 1000)),
+
+    erldis_client:stop(Client).
+
+blocking_queue_sender() ->
+    Client = setup(),
+    erldis:rpush(Client, <<"a">>, <<1>>),
+    timer:sleep(100),
+    erldis:rpush(Client, <<"b">>, <<1>>),
+    timer:sleep(100),
+    erldis:rpush(Client, <<"a">>, <<2>>),
+    timer:sleep(3000),
+    erldis:rpush(Client, <<"a">>, <<3>>),
+    erldis_client:stop(Client).
+
 foreach_test() ->
 	Client = setup(),
 	?assertEqual(0, erldis_list:len(<<"foo">>, Client)),

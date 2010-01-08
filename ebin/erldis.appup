@@ -1,4 +1,14 @@
-{"0.0.11", [
+{"0.1.1", [
+	{"0.1.0", [
+		{load_module, erldis_client},
+		{load_module, erldis}
+	]},
+	{"0.0.12", [{restart_application, erldis}]},
+	{"0.0.11", [
+		{load_module, erldis},
+		{load_module, erldis_proto},
+		{load_module, erldis_sync_client}
+	]},
 	{"0.0.10", [
 		{load_module, erldis_client},
 		{load_module, erldis_client}
@@ -38,6 +48,16 @@
 		{add_module, erldis_sets}
 	]}
 ], [
+	{"0.1.0", [
+		{load_module, erldis_client},
+		{load_module, erldis}
+	]},
+	{"0.0.12", [{restart_application, erldis}]},
+	{"0.0.11", [
+		{load_module, erldis},
+		{load_module, erldis_proto},
+		{load_module, erldis_sync_client}
+	]},
 	{"0.0.10", [
 		{load_module, erldis_client},
 		{load_module, erldis_client}
