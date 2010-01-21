@@ -6,7 +6,7 @@ sets_test() ->
 	% setup
 	application:load(erldis),
 	{ok, Client} = erldis_client:connect(),
-	?assertEqual(erldis_client:call(Client, <<"flushdb">>), [ok]),
+	?assertEqual(erldis:flushdb(Client), ok),
 	% non existent set
 	?assertEqual(erldis_sets:is_set(Client, <<"foo">>), false),
 	?assertEqual(erldis_sets:to_list(Client, <<"foo">>), []),

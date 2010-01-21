@@ -146,6 +146,20 @@ merge_test() ->
 	
 	erldis_client:stop(Client).
 
+umerge_test() ->
+	Client = setup(),
+	Key = <<"foo">>,
+	F = fun(A, B) -> A =< B end,
+	?assertEqual(0, erldis_list:len(Key, Client)),
+	L1 = [<<"a">>, <<"c">>, <<"e">>],
+	erldis_list:umerge(F, L1, Key, Client),
+	L1 = erldis_list:to_list(Key, Client),
+	erldis_list:umerge(F, L1, Key, Client),
+	L1 = erldis_list:to_list(Key, Client),
+	erldis_list:umerge(F, [<<"a">>], Key, Client),
+	L1 = erldis_list:to_list(Key, Client),
+	erldis_client:stop(Client).
+
 common_test() ->
 	Client = setup(),
 	?assertEqual(0, erldis_list:len(<<"foo">>, Client)),
@@ -184,5 +198,5 @@ setup() ->
 	% setup
 	application:load(erldis),
 	{ok, Client} = erldis_client:connect(),
-	?assertEqual(erldis_client:call(Client, <<"flushdb ">>), [ok]),
+	?assertEqual(erldis:flushdb(Client), ok),
 	Client.

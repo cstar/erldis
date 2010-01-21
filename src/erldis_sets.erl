@@ -14,59 +14,38 @@
 
 delete(Client) -> erldis_client:stop(Client).
 
-is_set(Client, Key) -> [<<"set">>] == scall(Client, <<"type ">>, [Key]).
+is_set(Client, Key) -> <<"set">> == erldis:type(Client, Key).
 
-size(Client, Key) ->
-	case scall(Client, <<"scard ">>, [Key]) of
-		% redis actually returns 0 & 1, but those are interpreted as false & true
-		[false] -> 0;
-		[true] -> 1;
-		[Size] -> Size
-	end.
+size(Client, Key) -> erldis:scard(Client, Key).
 
-to_list(Client, Key) -> scall(Client, <<"smembers ">>, [Key]).
+to_list(Client, Key) -> erldis:smembers(Client, Key).
 
 from_list(Client, Key, List) ->
 	% delete existing set
-	scall(Client, <<"del ">>, [Key]),
+	erldis:del(Client, Key),
 	lists:foreach(fun(Elem) -> add_element(Elem, Client, Key) end, List),
 	Client.
 
-is_element(Elem, Client, Key) ->
-	case set_call(Client, <<"sismember ">>, Key, Elem) of
-		[false] -> false;
-		[true] -> true
-	end.
+is_element(Elem, Client, Key) -> erldis:sismember(Client, Key, Elem).
 
-add_element(Elem, Client, Key) -> set_call(Client, <<"sadd ">>, Key, Elem).
+add_element(Elem, Client, Key) -> erldis:sadd(Client, Key, Elem).
 
-del_element(Elem, Client, Key) -> set_call(Client, <<"srem ">>, Key, Elem).
+del_element(Elem, Client, Key) -> erldis:srem(Client, Key, Elem).
 
-union(Client, Keys) -> scall(Client, <<"sunion ">>, Keys).
+union(Client, Keys) -> erldis:sunion(Client, Keys).
 
 intersection(Client, Key1, Key2) -> intersection(Client, [Key1, Key2]).
 
-intersection(Client, Keys) -> scall(Client, <<"sinter ">>, Keys).
+intersection(Client, Keys) -> erldis:sintersect(Client, Keys).
 
 is_disjoint(Client, Key1, Key2) -> [] == intersection(Client, [Key1, Key2]).
 
 subtract(Client, Key1, Key2) -> subtract(Client, [Key1, Key2]).
 
-subtract(Client, Keys) -> scall(Client, <<"sdiff ">>, Keys).
+subtract(Client, Keys) -> erldis:sdiff(Client, Keys).
 
 is_subset(Client, Key1, Key2) -> [] == subtract(Client, [Key2, Key1]).
 
 fold(F, Acc0, Client, Key) -> lists:foldl(F, Acc0, to_list(Client, Key)).
 
 filter(Pred, Client, Key) -> lists:filter(Pred, to_list(Client, Key)).
-
-%%%%%%%%%%%%%
-%% helpers %%
-%%%%%%%%%%%%%
-
-% TODO: handle {error, Reason}. throw exception?
-
-scall(Client, Cmd, Args) -> erldis_client:scall(Client, Cmd, Args).
-
-set_call(Client, Cmd, Key, Val) ->
-	erldis_client:call(Client, Cmd, [[Key, erlang:size(Val)], [Val]]).

@@ -5,21 +5,21 @@
 		 update_counter/2, update_counter/3]).
 
 % NOTE: use erldis_lists instead, fetch & find won't work for lists
-append(Key, Value, Client) -> set_call(Client, <<"rpush ">>, Key, Value).
+append(Key, Value, Client) -> erldis:rpush(Client, Key, Value).
 
 append_list(Key, Values, Client) ->
 	lists:foreach(fun(Value) -> append(Key, Value, Client) end, Values).
 
-erase(Key, Client) -> scall(Client, <<"del ">>, [Key]).
+erase(Key, Client) -> erldis:del(Client, Key).
 
 fetch(Key, Client) ->
-	case scall(Client, <<"get ">>, [Key]) of
-		[nil] -> undefined;
-		[Value] -> Value
+	case erldis:get(Client, Key) of
+		nil -> undefined;
+		Value -> Value
 	end.
 
 % NOTE: this is only useful if keys have a known prefix
-fetch_keys(Pattern, Client) -> scall(Client, <<"keys ">>, [Pattern]).
+fetch_keys(Pattern, Client) -> erldis:keys(Client, Pattern).
 
 %filter(Pred, Client) -> ok.
 
@@ -33,13 +33,12 @@ find(Key, Client) ->
 
 %from_list(List, Client) -> ok.
 
-is_key(Key, Client) -> hd(scall(Client, <<"exists ">>, [Key])).
+is_key(Key, Client) -> erldis:exists(Client, Key).
 
-size(Client) ->
-	numeric_value(erldis_sync_client:scall(Client, <<"dbsize ">>)).
+size(Client) -> erldis:dbsize(Client).
 
 store(Key, [], Client) -> erase(Key, Client);
-store(Key, Value, Client) -> set_call(Client, <<"set ">>, Key, Value).
+store(Key, Value, Client) -> erldis:set(Client, Key, Value).
 
 %to_list(Client) -> ok.
 
@@ -56,22 +55,5 @@ update(Key, Fun, Initial, Client) ->
 update_counter(Key, Client) -> update_counter(Key, 1, Client).
 
 % NOTE: this returns new count value, not a modified dict
-update_counter(Key, 1, Client) ->
-	numeric_value(scall(Client, <<"incr ">>, [Key]));
-update_counter(Key, Incr, Client) ->
-	numeric_value(scall(Client, <<"incrby ">>, [Key, Incr])).
-
-%%%%%%%%%%%%%
-%% helpers %%
-%%%%%%%%%%%%%
-
-numeric_value([false]) -> 0;
-numeric_value([true]) -> 1;
-numeric_value([Val]) -> Val.
-
-% TODO: copied from erldis_sets, abstract if possible, maybe use a macro
-
-scall(Client, Cmd, Args) -> erldis_sync_client:scall(Client, Cmd, Args).
-
-set_call(Client, Cmd, Key, Val) ->
-	erldis_sync_client:call(Client, Cmd, [[Key, erlang:size(Val)], [Val]]).
+update_counter(Key, 1, Client) -> erldis:incr(Client, Key);
+update_counter(Key, Incr, Client) -> erldis:incrby(Client, Key, Incr).

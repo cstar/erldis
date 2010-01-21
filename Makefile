@@ -14,7 +14,7 @@ clean_tests:
 	(cd test;$(MAKE) clean)
 	rm -rf erl_crash.dump *.beam	
 
-test: clean
+test: FORCE
 	mkdir -p ebin/
 	(cd src;$(MAKE))
 	(cd test;$(MAKE))
@@ -38,3 +38,5 @@ plt:
 
 check: all
 	@dialyzer --check_plt --plt .plt -q -r . -I include/
+
+FORCE:

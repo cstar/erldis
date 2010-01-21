@@ -15,7 +15,8 @@
 
 -include("erldis.hrl").
 
--export([scall/2, scall/3, scall/4, call/2, call/3, call/4, bcall/4, sr_scall/2, sr_scall/3]).
+-export([sr_scall/2, sr_scall/3, scall/2, scall/3, scall/4, call/2, call/3, call/4,
+		 bcall/4, set_call/4, send/3]).
 -export([stop/1, transact/1, transact/2, select/2, info/1]).
 -export([connect/0, connect/1, connect/2, connect/3, connect/4]).
 -export([start_link/0, start_link/1, start_link/2, start_link/3, start_link/4]).
@@ -127,6 +128,11 @@ call(Client, Cmd, Args, Timeout) ->
 bcall(Client, Cmd, Args, Timeout) ->
     scall(Client, Cmd, Args ++ [server_timeout(Timeout)], erlang_timeout(Timeout)).
 
+set_call(Client, Cmd, Key, Val) when is_binary(Val) ->
+	call(Client, Cmd, [[Key, erlang:size(Val)], [Val]]);
+set_call(Client, Cmd, Key, Val) ->
+	set_call(Client, Cmd, Key, bin(Val)).
+
 % Erlang uses milliseconds, with symbol "infinity" for "wait forever";
 % redis uses seconds, with 0 for "wait forever".
 server_timeout(infinity) -> 0;
@@ -183,26 +189,26 @@ info(Client) ->
 			end
 		end,
 
-	[S] = scall(Client, info),
+	[S] = scall(Client, <<"info ">>),
 	elists:mapfilter(F, string:tokens(binary_to_list(S), ?EOL)).
 
-parse_stat(<<"redis_version:",Vsn/binary>>) ->
+parse_stat("redis_version:"++Vsn) ->
 	{version, Vsn};
-parse_stat(<<"uptime_in_seconds:",Val/binary>>) ->
+parse_stat("uptime_in_seconds:"++Val) ->
 	{uptime, list_to_integer(Val)};
-parse_stat(<<"connected_clients:",Val/binary>>) ->
+parse_stat("connected_clients:"++Val) ->
 	{clients, list_to_integer(Val)};
-parse_stat(<<"connected_slaves:",Val/binary>>) ->
+parse_stat("connected_slaves:"++Val) ->
 	{slaves, list_to_integer(Val)};
-parse_stat(<<"used_memory:",Val/binary>>) ->
+parse_stat("used_memory:"++Val) ->
 	{memory, list_to_integer(Val)};
-parse_stat(<<"changes_since_last_save:",Val/binary>>) ->
+parse_stat("changes_since_last_save:"++Val) ->
 	{changes, list_to_integer(Val)};
-parse_stat(<<"last_save_time:",Val/binary>>) ->
+parse_stat("last_save_time:"++Val) ->
 	{last_save, list_to_integer(Val)};
-parse_stat(<<"total_connections_received:",Val/binary>>) ->
+parse_stat("total_connections_received:"++Val) ->
 	{connections, list_to_integer(Val)};
-parse_stat(<<"total_commands_processed:",Val/binary>>) ->
+parse_stat("total_commands_processed:"++Val) ->
 	{commands, list_to_integer(Val)};
 parse_stat(_) ->
 	undefined.
@@ -274,7 +280,9 @@ ensure_started(#redis{socket=undefined, db=DB}=State) ->
 			Report = [{?MODULE, unable_to_connect}, {error, Why}, State],
 			error_logger:warning_report(Report),
 			State;
-		{ok, #redis{socket=Socket, _='_'}=NewState} ->
+		{ok, NewState} ->
+			Socket = NewState#redis.socket,
+			
 			if
 				DB == <<"0">> ->
 					ok;
@@ -359,10 +367,8 @@ handle_cast({send, Cmd}, #redis{remaining=Remaining, calls=Calls} = State1) ->
 	gen_tcp:send(State#redis.socket, [Cmd|End]),
 	
 	case Remaining of
-		0 ->
-			{noreply, State#redis{remaining=1, calls=Queue}};
-		_ ->
-			{noreply,State#redis{calls=Queue}}
+		0 -> {noreply, State#redis{remaining=1, calls=Queue}};
+		_ -> {noreply, State#redis{calls=Queue}}
 	end;
 handle_cast(_, State) ->
 	{noreply, State}.

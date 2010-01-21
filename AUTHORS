@@ -1,0 +1,17 @@
+Valentino Volonghi
+	- initial codebase
+	http://bitbucket.org/adroll/erldis/
+
+Jacob Perkins
+	- synchronous client
+	- stdlib emulation modules
+	http://bitbucket.org/japerk/erldis/
+
+Eric Cestari
+	- binary communication
+	- MULTI/EXEC
+	http://github.com/cstar/erldis
+
+tonyg
+	- BLPOP & BRPOP
+	https://bitbucket.org/tonyg/erldis/
