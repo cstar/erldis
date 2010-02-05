@@ -91,7 +91,12 @@ type(Client, Key) ->
 keys(Client, Pattern) when not is_binary(Pattern) ->
 	keys(Client, erldis_client:bin(Pattern));
 keys(Client, Pattern) ->
-	erldis_client:scall(Client, <<"keys ", Pattern/binary>>).
+	% TODO: tokenize the binary directly (if is faster)
+	% NOTE: with binary-list conversion, timer:tc says 26000-30000 microseconds
+	case erldis_client:scall(Client, <<"keys ">>, [Pattern]) of
+		[] -> [];
+		[B] -> [list_to_binary(S) || S <- string:tokens(binary_to_list(B), " ")]
+	end.
 
 randomkey(Client, Key) when not is_binary(Key) ->
 	randomkey(Client, erldis_client:bin(Key));

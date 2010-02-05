@@ -16,26 +16,28 @@ utils_test() ->
 
 basic_test() ->
 	{ok, Client} = erldis:connect("localhost", 6379),
-	erldis:flushall(Client),
+	?assertEqual(erldis:flushdb(Client), ok),
 
-	nil = erldis:get(Client, <<"pippo">>),
+	?assertEqual(erldis:get(Client, <<"pippo">>), nil),
 	ok = erldis:set(Client, <<"hello">>, <<"kitty!">>),
-	true = erldis:setnx(Client, <<"foo">>, <<"bar">>),
-	false = erldis:setnx(Client, <<"foo">>, <<"bar">>),
-
-	true = erldis:exists(Client, <<"hello">>),
-	true = erldis:exists(Client, <<"foo">>),
-	<<"bar">> = erldis:get(Client, <<"foo">>),
-	[<<"kitty!">>, <<"bar">>] = erldis:mget(Client, [<<"hello">>, <<"foo">>]),
-	true = erldis:del(Client, <<"hello">>),
-	true = erldis:del(Client, <<"foo">>),
-	false = erldis:exists(Client, <<"hello">>),
-	false = erldis:exists(Client, <<"foo">>),
+	?assert(erldis:setnx(Client, <<"foo">>, <<"bar">>)),
+	?assertNot(erldis:setnx(Client, <<"foo">>, <<"bar">>)),
+	
+	?assert(erldis:exists(Client, <<"hello">>)),
+	?assert(erldis:exists(Client, <<"foo">>)),
+	?assertEqual(erldis:get(Client, <<"foo">>), <<"bar">>),
+	?assertEqual(erldis:mget(Client, [<<"hello">>, <<"foo">>]), [<<"kitty!">>, <<"bar">>]),
+	?assertEqual(erldis:keys(Client, <<"f*">>), [<<"foo">>]),
+	
+	?assert(erldis:del(Client, <<"hello">>)),
+	?assert(erldis:del(Client, <<"foo">>)),
+	?assertNot(erldis:exists(Client, <<"hello">>)),
+	?assertNot(erldis:exists(Client, <<"foo">>)),
 
 	erldis:sadd(Client, <<"set">>, <<"toto">>),
-	[<<"toto">>] = erldis:smembers(Client, <<"set">>),
+	?assertEqual(erldis:smembers(Client, <<"set">>), [<<"toto">>]),
 	erldis:srem(Client, <<"set">>, <<"toto">>),
-	[] = erldis:smembers(Client, <<"set">>).
+	?assertEqual(erldis:smembers(Client, <<"set">>), []).
 
 	%%% Commented out. Using the new erldis_set, erldis_list.
 	%ok = erldis:set(Client, <<"pippo">>, <<"pluto">>),

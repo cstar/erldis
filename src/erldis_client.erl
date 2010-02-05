@@ -103,6 +103,7 @@ sr_scall(Client, Cmd) -> sr_scall(Client, Cmd, []).
 sr_scall(Client, Cmd, Args) ->
 	case scall(Client, Cmd, Args) of
 		[R] -> R;
+		[] -> nil;
 		ok -> ok
 	end.
 
@@ -313,8 +314,8 @@ connect_socket(State, _) ->
 %% handle_call %%
 %%%%%%%%%%%%%%%%%
 
-handle_call(is_pipelined, _From, #redis{pipeline=P}=State)->
-  {reply, P, State};
+handle_call(is_pipelined, _From, State)->
+  {reply, State#redis.pipeline, State};
 handle_call(get_all_results, From, #redis{pipeline=true, calls=Calls} = State) ->
 	case queue:len(Calls) of
 		0 ->
@@ -395,7 +396,7 @@ send_reply(#redis{pipeline=true, calls=Calls, results=Results, reply_caller=Repl
 		R -> R
 	end,
 	
-	{{value, _From}, Queue} = queue:out(Calls),
+	{_, Queue} = queue:out(Calls),
 	
 	case queue:len(Queue) of
 		0 ->
@@ -417,11 +418,15 @@ send_reply(#redis{pipeline=true, calls=Calls, results=Results, reply_caller=Repl
 	end;
 
 send_reply(State) ->
-	{{value, From}, Queue} = queue:out(State#redis.calls),
-	Reply = lists:reverse(State#redis.buffer),
-	gen_server2:reply(From, Reply),
+	case queue:out(State#redis.calls) of
+		{{value, From}, Queue} ->
+			Reply = lists:reverse(State#redis.buffer),
+			gen_server2:reply(From, Reply);
+		{empty, Queue} ->
+			ok
+	end,
+	
 	State#redis{calls=Queue, buffer=[], pstate=empty}.
-
 
 parse_state(State, Socket, Data) ->
 	Parse = erldis_proto:parse(State#redis.pstate, trim2(Data)),
@@ -470,7 +475,6 @@ handle_info({tcp, Socket, Data}, State) ->
 			{noreply, NewState}
 	end;
 handle_info({tcp_closed, Socket}, State=#redis{socket=Socket}) ->
-	error_logger:warning_report([{erldis_client, tcp_closed}, State]),
 	{noreply, State#redis{socket=undefined}};
 handle_info(_Info, State) ->
 	{noreply, State}.
