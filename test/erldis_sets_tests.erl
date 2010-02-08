@@ -33,3 +33,31 @@ sets_test() ->
 	?assertEqual(lists:sort(erldis_sets:to_list(Client, <<"foo">>)), Elems),
 	erldis_client:stop(Client).
 	% TODO: test union, intersection, is_disjoint, subtract.
+
+combo_sets_test() ->
+	application:load(erldis),
+	{ok, Client} = erldis_client:connect(),
+	?assertEqual(ok, erldis:flushdb(Client)),
+	
+	?assertEqual(true, erldis_sets:add_element(<<"1">>, Client, <<"foo">>)),
+	?assertEqual(true, erldis_sets:add_element(<<"2">>, Client, <<"foo">>)),
+	?assertEqual(true, erldis_sets:add_element(<<"3">>, Client, <<"foo">>)),
+	
+	?assertEqual(true, erldis_sets:add_element(<<"2">>, Client, <<"bar">>)),
+	?assertEqual(true, erldis_sets:add_element(<<"3">>, Client, <<"bar">>)),
+	?assertEqual(true, erldis_sets:add_element(<<"4">>, Client, <<"bar">>)),
+	
+	Union = erldis_sets:union(Client, [<<"foo">>, <<"bar">>]),
+	?assertEqual([<<"1">>, <<"2">>, <<"3">>, <<"4">>], lists:sort(Union)),
+	?assertEqual(4, erldis:sunionstore(Client, <<"union">>, [<<"foo">>, <<"bar">>])),
+	?assertEqual(lists:sort(Union), lists:sort(erldis:smembers(Client, <<"union">>))),
+	
+	?assertEqual([<<"1">>], erldis_sets:subtract(Client, <<"foo">>, <<"bar">>)),
+	?assertEqual([<<"4">>], erldis_sets:subtract(Client, <<"bar">>, <<"foo">>)),
+	?assertEqual(1, erldis:sdiffstore(Client, <<"diff">>, [<<"foo">>, <<"bar">>])),
+	?assertEqual([<<"1">>], erldis:smembers(Client, <<"diff">>)),
+	
+	Inter = erldis_sets:intersection(Client, [<<"foo">>, <<"bar">>]),
+	?assertEqual([<<"2">>, <<"3">>], lists:sort(Inter)),
+	?assertEqual(2, erldis:sinterstore(Client, <<"inter">>, [<<"foo">>, <<"bar">>])),
+	?assertEqual(lists:sort(Inter), lists:sort(erldis:smembers(Client, <<"inter">>))).

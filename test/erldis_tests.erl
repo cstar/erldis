@@ -3,63 +3,102 @@
 -include_lib("eunit/include/eunit.hrl").
 -include("erldis.hrl").
 
-%quit_test() ->
-%	 {ok, Client} = erldis:connect(<<"localhost">>, 6379),
-%	 ok = erldis:quit(Client),
-%	 false = is_process_alive(Client).
-%
+quit_test() ->
+	{ok, Client} = erldis:connect("localhost", 6379),
+	?assertEqual(shutdown, erldis:quit(Client)),
+	false = is_process_alive(Client).
+
 utils_test() ->
-	?assertEqual(erldis_client:bin(1), <<"1">>),
-	?assertEqual(erldis_client:bin(atom), <<"atom">>),
-	?assertEqual(erldis_client:format([[1, 2, 3]]), <<"1 2 3">>),
-	?assertEqual(erldis_client:format([[1,2,3], [4,5,6]]), <<"1 2 3\r\n4 5 6">>).
+	?assertEqual(<<"1">>, erldis_binaries:to_binary(1)),
+	?assertEqual(<<"atom">>, erldis_binaries:to_binary(atom)),
+	?assertEqual(<<"1 2 3">>, erldis_client:format([[1, 2, 3]])),
+	?assertEqual(<<"1 2 3\r\n4 5 6">>, erldis_client:format([[1,2,3], [4,5,6]])).
 
 basic_test() ->
 	{ok, Client} = erldis:connect("localhost", 6379),
-	?assertEqual(erldis:flushdb(Client), ok),
+	?assertEqual(ok, erldis:flushdb(Client)),
 
-	?assertEqual(erldis:get(Client, <<"pippo">>), nil),
+	?assertEqual(nil, erldis:get(Client, <<"pippo">>)),
 	ok = erldis:set(Client, <<"hello">>, <<"kitty!">>),
 	?assert(erldis:setnx(Client, <<"foo">>, <<"bar">>)),
 	?assertNot(erldis:setnx(Client, <<"foo">>, <<"bar">>)),
 	
 	?assert(erldis:exists(Client, <<"hello">>)),
 	?assert(erldis:exists(Client, <<"foo">>)),
-	?assertEqual(erldis:get(Client, <<"foo">>), <<"bar">>),
-	?assertEqual(erldis:mget(Client, [<<"hello">>, <<"foo">>]), [<<"kitty!">>, <<"bar">>]),
-	?assertEqual(erldis:keys(Client, <<"f*">>), [<<"foo">>]),
+	?assertEqual(<<"bar">>, erldis:get(Client, <<"foo">>)),
+	?assertEqual([<<"kitty!">>, <<"bar">>], erldis:mget(Client, [<<"hello">>, <<"foo">>])),
+	?assertEqual([<<"foo">>], erldis:keys(Client, <<"f*">>)),
 	
 	?assert(erldis:del(Client, <<"hello">>)),
 	?assert(erldis:del(Client, <<"foo">>)),
 	?assertNot(erldis:exists(Client, <<"hello">>)),
 	?assertNot(erldis:exists(Client, <<"foo">>)),
+	
+	?assertEqual(shutdown, erldis:quit(Client)).
 
+set_test() ->
+	{ok, Client} = erldis:connect("localhost", 6379),
+	?assertEqual(ok, erldis:flushdb(Client)),
 	erldis:sadd(Client, <<"set">>, <<"toto">>),
-	?assertEqual(erldis:smembers(Client, <<"set">>), [<<"toto">>]),
+	?assertEqual([<<"toto">>], erldis:smembers(Client, <<"set">>)),
 	erldis:srem(Client, <<"set">>, <<"toto">>),
-	?assertEqual(erldis:smembers(Client, <<"set">>), []).
+	?assertEqual([], erldis:smembers(Client, <<"set">>)),
+	?assertEqual(shutdown, erldis:quit(Client)).
 
-	%%% Commented out. Using the new erldis_set, erldis_list.
-	%ok = erldis:set(Client, <<"pippo">>, <<"pluto">>),
-	%{error, <<"ERR Operation against a key holding the wrong kind of value"} = erldis:sadd(Client, <<"pippo">>, <<"paperino">>),
-	%% foo doesn't exist, the result will be nil
-	%[] = erldis:lrange(Client, <<"foo">>, 1, 2),
-	%true = erldis:del(Client, <<"pippo">>),
-	%
-	%ok = erldis:rpush(Client, <<"a_list">>, <<"1">>),
-	%ok = erldis:rpush(Client, <<"a_list">>, <<"2">>),
-	%ok = erldis:rpush(Client, <<"a_list">>, <<"3">>),
-	%%ok = erldis:rpush(Client, <<"a_list">>, <<"1">>),
-	%%true = erldis:lrem(Client, <<"a_list">>, 1, <<"1">>).
-	%[<<"2">>, <<"3">>, <<"1">>] = erldis:lrange(Client, <<"a_list">>, 0, 2),
-	%
-	%[<<"1">>, <<"2">>, <<"3">>] = erldis:sort(Client, <<"a_list">>),
-	%[<<"3">>, <<"2">>, <<"1">>] = erldis:sort(Client, <<"a_list">>, <<"DESC">>),
-	%[<<"2">>, <<"3">>, <<"1">>] = erldis:lrange(Client, <<"a_list">>, 0, 2),
-	%[<<"1">>, <<"2">>] = erldis:sort(Client, <<"a_list">>, <<"LIMIT 0 2 ASC">>).
-	%ok = erldis:quit(Client).
+list_test() ->
+	{ok, Client} = erldis:connect("localhost", 6379),
+	?assertEqual(ok, erldis:flushdb(Client)),
+	
+	?assertEqual([], erldis:lrange(Client, <<"foo">>, 1, 2)),
+	ok = erldis:rpush(Client, <<"a_list">>, <<"1">>),
+	ok = erldis:rpush(Client, <<"a_list">>, <<"2">>),
+	ok = erldis:rpush(Client, <<"a_list">>, <<"3">>),
+	ok = erldis:rpush(Client, <<"a_list">>, <<"1">>),
+	?assertEqual(1, erldis:lrem(Client, <<"a_list">>, 1, <<"1">>)),
+	?assertEqual([<<"2">>, <<"3">>, <<"1">>], erldis:lrange(Client, <<"a_list">>, 0, 2)),
+	?assertEqual([<<"1">>, <<"2">>, <<"3">>], erldis:sort(Client, <<"a_list">>)),
+	?assertEqual([<<"3">>, <<"2">>, <<"1">>], erldis:sort(Client, <<"a_list">>, <<"DESC">>)),
+	?assertEqual([<<"1">>, <<"2">>], erldis:sort(Client, <<"a_list">>, <<"LIMIT 0 2 ASC">>)),
+	
+	?assertEqual(shutdown, erldis:quit(Client)).
 
-
+zset_test() ->
+	{ok, Client} = erldis:connect("localhost", 6379),
+	?assertEqual(ok, erldis:flushdb(Client)),
+	
+	?assertEqual(0, erldis:zcard(Client, <<"foo">>)),
+	?assertEqual([], erldis:zrange(Client, <<"foo">>, 0, 1)),
+	?assertEqual(0, erldis:zscore(Client, <<"foo">>, <<"elem1">>)),
+	
+	?assertEqual(true, erldis:zadd(Client, <<"foo">>, 5, <<"elem1">>)),
+	?assertEqual([<<"elem1">>], erldis:zrange(Client, <<"foo">>, 0, 1)),
+	?assertEqual([<<"elem1">>], erldis:zrevrange(Client, <<"foo">>, 0, 1)),
+	?assertEqual(false, erldis:zadd(Client, <<"foo">>, 6, <<"elem1">>)),
+	?assertEqual(1, erldis:zcard(Client, <<"foo">>)),
+	?assertEqual(6, erldis:zscore(Client, <<"foo">>, <<"elem1">>)),
+	?assertEqual(8, erldis:zincrby(Client, <<"foo">>, 2, <<"elem1">>)),
+	% can use list keys & values too
+	?assertEqual(true, erldis:zadd(Client, "foo", 1.5, "a-elem")),
+	?assertEqual(2, erldis:zcard(Client, "foo")),
+	?assertEqual(1.5, erldis:zscore(Client, "foo", "a-elem")),
+	?assertEqual([<<"a-elem">>, <<"elem1">>], erldis:zrange(Client, "foo", 0, 2)),
+	?assertEqual([<<"elem1">>, <<"a-elem">>], erldis:zrevrange(Client, "foo", 0, 2)),
+	?assertEqual([<<"a-elem">>], erldis:zrangebyscore(Client, "foo", 1.0, 2.0)),
+	?assertEqual([<<"a-elem">>], erldis:zrangebyscore(Client, "foo", 1, 10, 0, 1)),
+	?assertEqual([<<"a-elem">>, <<"elem1">>], erldis:zrangebyscore(Client, "foo", 1, 10, 0, 2)),
+	?assertEqual([<<"elem1">>], erldis:zrangebyscore(Client, "foo", 1, 10, 1, 2)),
+	?assertEqual([], erldis:zrangebyscore(Client, "foo", 1, 10, 2, 2)),
+	?assertEqual(1, erldis:zremrangebyscore(Client, "foo", 1, 2)),
+	?assertEqual(false, erldis:zrem(Client, "foo", "a-elem")),
+	?assertEqual(1, erldis:zcard(Client, "foo")),
+	?assertEqual([<<"elem1">>], erldis:zrevrange(Client, "foo", 0, 1)),
+	
+	?assertEqual(true, erldis:zrem(Client, <<"foo">>, <<"elem1">>)),
+	?assertEqual(false, erldis:zrem(Client, <<"foo">>, <<"elem1">>)),
+	?assertEqual(0, erldis:zcard(Client, <<"foo">>)),
+	?assertEqual([], erldis:zrange(Client, <<"foo">>, 0, 2)),
+	
+	?assertEqual(shutdown, erldis:quit(Client)).
 
 % inline_tests(Client) ->
 %	  [?_assertMatch(ok, erldis:set(Client, <<"hello">>, <<"kitty!">>)),

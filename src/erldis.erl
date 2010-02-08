@@ -1,197 +1,119 @@
 -module(erldis).
 
 -compile(export_all).
--define(EOL, "\r\n").
 
-%% helpers
-flatten({error, Message}) ->
-	{error, Message};
-flatten(List) when is_list(List)->	 
-	lists:flatten(List).
+%%%%%%%%%%%%%%%%%%%%%%%
+%% Client Connection %%
+%%%%%%%%%%%%%%%%%%%%%%%
 
-%% exposed API
-connect() ->
-	erldis_client:connect().
-connect(Host) ->
-	erldis_client:connect(Host).
-connect(Host, Port) ->
-	erldis_client:connect(Host, Port).
-connect(Host, Port, Options) ->
-	erldis_client:connect(Host, Port, Options).
+connect() -> erldis_client:connect().
 
-get_all_results(Client) -> gen_server2:call(Client, get_all_results).
+connect(Host) -> erldis_client:connect(Host).
 
-set_pipelining(Client, Bool) -> gen_server2:cast(Client, {pipelining, Bool}).
+connect(Host, Port) -> erldis_client:connect(Host, Port).
 
-quit(Client) ->
-	erldis_client:scall(Client, <<"QUIT">>),
-	erldis_client:disconnect(Client).
+connect(Host, Port, Options) -> erldis_client:connect(Host, Port, Options).
 
-%% Commands operating on string values
-internal_set_like(Client, Command, Key, Value) when is_binary(Key), is_binary(Value) ->
-	Size = list_to_binary(integer_to_list(size(Value))),
-	Cmd = <<Command/binary, Key/binary, " ", Size/binary, "\r\n", Value/binary>>,
-	
-	case erldis_client:call(Client, Cmd) of
-		[{error, _}=Error] -> Error;
-		[R] when R == ok; R == nil; R == true; R == false -> R;
-		R -> R
-	end;
-internal_set_like(Client, Command, Key, Value) when is_binary(Value) ->
-	case erldis_client:call(Client, Command, [[Key, size(Value)], [Value]]) of
-		[{error, _}=Error] -> Error;
-		[R] when R == ok; R == nil; R == true; R == false -> R;
-		R -> R
-	end;
-internal_set_like(Client, Command, Key, Value) when not is_binary(Key) ->
-	internal_set_like(Client, Command, erldis_client:bin(Key), Value);
-internal_set_like(Client, Command, Key, Value) when not is_binary(Value) ->
-	internal_set_like(Client, Command, Key, erldis_client:bin(Value));
-internal_set_like(_, _, _, _) ->
-	{error, badarg}.
-
-auth(Client, Password) ->
-	erldis_client:scall(Client, <<"auth ", Password/binary>>).
-
-exec(Client, Fun) ->
-	case erldis_client:sr_scall(Client, <<"multi ">>) of
-		ok ->
-			set_pipelining(Client, true),
-			Fun(Client),
-			get_all_results(Client),
-			set_pipelining(Client, false),
-			erldis_client:scall(Client, <<"exec ">>);
-		_ ->
-			{error, unsupported}
-	end.
-
-numeric(false) -> 0;
-numeric(true) -> 1;
-numeric(I) -> I.
+quit(Client) -> erldis_client:stop(Client).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Commands operating on every value %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-exists(Client, Key) when not is_binary(Key) ->
-	exists(Client, erldis_client:bin(Key));
-exists(Client, Key) ->
-	erldis_client:sr_scall(Client, <<"exists ", Key/binary>>).
+exists(Client, Key) -> erldis_client:sr_scall(Client, inline_cmd(<<"exists">>, Key)).
 
-del(Client, Key) when not is_binary(Key) ->
-	del(Client, erldis_client:bin(Key));
-del(Client, Key) ->
-	erldis_client:sr_scall(Client, <<"del ", Key/binary>>).
+del(Client, Key) -> erldis_client:sr_scall(Client, inline_cmd(<<"del">>, Key)).
 
-type(Client, Key) when not is_binary(Key) ->
-	type(Client, erldis_client:bin(Key));
-type(Client, Key) ->
-	erldis_client:sr_scall(Client, <<"type ", Key/binary>>).
+type(Client, Key) -> erldis_client:sr_scall(Client, inline_cmd(<<"type">>, Key)).
 
-keys(Client, Pattern) when not is_binary(Pattern) ->
-	keys(Client, erldis_client:bin(Pattern));
 keys(Client, Pattern) ->
 	% TODO: tokenize the binary directly (if is faster)
 	% NOTE: with binary-list conversion, timer:tc says 26000-30000 microseconds
-	case erldis_client:scall(Client, <<"keys ">>, [Pattern]) of
+	case erldis_client:scall(Client, inline_cmd(<<"keys">>, Pattern)) of
 		[] -> [];
 		[B] -> [list_to_binary(S) || S <- string:tokens(binary_to_list(B), " ")]
 	end.
 
-randomkey(Client, Key) when not is_binary(Key) ->
-	randomkey(Client, erldis_client:bin(Key));
+% TODO: test randomkey, rename, renamenx, dbsize, expire, ttl
+
 randomkey(Client, Key) ->
-	erldis_client:sr_scall(Client, <<"randomkey ", Key/binary>>).
+	erldis_client:sr_scall(Client, inline_cmd(<<"randomkey">>, Key)).
 
-rename(Client, OldKey, NewKey) when not is_binary(OldKey) ->
-	rename(Client, erldis_client:bin(OldKey), NewKey);
-rename(Client, OldKey, NewKey) when not is_binary(NewKey) ->
-	rename(Client, OldKey, erldis_client:bin(NewKey));
 rename(Client, OldKey, NewKey) ->
-	erldis_client:sr_scall(Client, <<"rename ", OldKey/binary, " ", NewKey/binary>>).
+	erldis_client:sr_scall(Client, inline_cmd([<<"rename">>, OldKey, NewKey])).
 
-renamenx(Client, OldKey, NewKey) when not is_binary(OldKey) ->
-	renamenx(Client, erldis_client:bin(OldKey), NewKey);
-renamenx(Client, OldKey, NewKey) when not is_binary(NewKey) ->
-	renamenx(Client, OldKey, erldis_client:bin(NewKey));
 renamenx(Client, OldKey, NewKey) ->
-	erldis_client:sr_scall(Client, <<"renamenx ", OldKey/binary, " ", NewKey/binary>>).
+	erldis_client:sr_scall(Client, inline_cmd([<<"renamenx">>, OldKey, NewKey])).
 
-dbsize(Client) -> numeric(erldis_client:sr_scall(Client, <<"dbsize ">>)).
+dbsize(Client) -> numeric(erldis_client:sr_scall(Client, <<"dbsize">>)).
 
-expire(Client, Key, Seconds) when not is_binary(Key) ->
-	expire(Client, erldis_client:bin(Key), Seconds);
 expire(Client, Key, Seconds) ->
-	erldis_client:sr_scall(Client, <<"expire ", Key/binary, " ", Seconds/binary>>).
+	erldis_client:sr_scall(Client, inline_cmd([<<"expire">>, Key, Seconds])).
 
-ttl(Client, Key) -> erldis_client:sr_scall(Client, <<"ttl ", Key/binary>>).
+ttl(Client, Key) -> erldis_client:sr_scall(Client, inline_cmd(<<"ttl">>, Key)).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Commands operating on string values %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-set(Client, Key, Value) -> internal_set_like(Client, <<"set ">>, Key, Value).
+set(Client, Key, Value) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"set">>, Key], Value)).
 
-get(Client, Key) when not is_binary(Key) ->
-	get(Client, erldis_client:bin(Key));
-get(Client, Key) ->
-	erldis_client:sr_scall(Client, <<"get ", Key/binary>>).
+get(Client, Key) -> erldis_client:sr_scall(Client, inline_cmd(<<"get">>, Key)).
 
-getset(Client, Key, Value) -> internal_set_like(Client, <<"getset ">>, Key, Value).
+getset(Client, Key, Value) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"getset">>, Key], Value)).
 
-mget(Client, Keys) -> erldis_client:scall(Client, <<"mget ">>, Keys).
+mget(Client, Keys) -> erldis_client:scall(Client, inline_cmd([<<"mget">> | Keys])).
 
-setnx(Client, Key, Value) -> internal_set_like(Client, <<"setnx ">>, Key, Value).
+setnx(Client, Key, Value) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"setnx">>, Key], Value)).
 
-incr(Client, Key) when not is_binary(Key) ->
-	incr(Client, erldis_client:bin(Key));
 incr(Client, Key) ->
-	numeric(erldis_client:sr_scall(Client, <<"incr ", Key/binary>>)).
+	numeric(erldis_client:sr_scall(Client, inline_cmd(<<"incr">>, Key))).
 
 incrby(Client, Key, By) ->
-	numeric(erldis_client:sr_scall(Client, <<"incrby ">>, [Key, By])).
+	numeric(erldis_client:sr_scall(Client, inline_cmd([<<"incrby">>, Key, By]))).
 
-decr(Client, Key) when not is_binary(Key) ->
-	decr(Client, erldis_client:bin(Key));
 decr(Client, Key) ->
-	numeric(erldis_client:sr_scall(Client, <<"decr ", Key/binary>>)).
+	numeric(erldis_client:sr_scall(Client, inline_cmd(<<"decr">>, Key))).
 
 decrby(Client, Key, By) ->
-	numeric(erldis_client:sr_scall(Client, <<"decrby ">>, [Key, By])).
+	numeric(erldis_client:sr_scall(Client, inline_cmd([<<"decrby">>, Key, By]))).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Commands operating on lists %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-rpush(Client, Key, Value) -> internal_set_like(Client, <<"rpush ">>, Key, Value).
+rpush(Client, Key, Value) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"rpush">>, Key], Value)).
 
-lpush(Client, Key, Value) -> internal_set_like(Client, <<"lpush ">>, Key, Value).
+lpush(Client, Key, Value) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"lpush">>, Key], Value)).
 
-llen(Client, Key) -> numeric(erldis_client:sr_scall(Client, <<"llen ">>, [Key])).
+llen(Client, Key) ->
+	numeric(erldis_client:sr_scall(Client, inline_cmd(<<"llen">>, Key))).
 
 lrange(Client, Key, Start, End) ->
-	erldis_client:scall(Client, <<"lrange ">>, [Key, Start, End]).
+	erldis_client:scall(Client, inline_cmd([<<"lrange">>, Key, Start, End])).
 
 ltrim(Client, Key, Start, End) ->
-	erldis_client:scall(Client, <<"ltrim ">>, [Key, Start, End]).
+	erldis_client:sr_scall(Client, inline_cmd([<<"ltrim">>, Key, Start, End])).
 	
 lindex(Client, Key, Index) ->
-	erldis_client:sr_scall(Client, <<"lindex ">>, [Key, Index]).
+	erldis_client:sr_scall(Client, inline_cmd([<<"lindex">>, Key, Index])).
 
-lset(Client, Key, Index, Value) when not is_binary(Value) ->
-	lset(Client, Key, Index, erldis_client:bin(Value));
 lset(Client, Key, Index, Value) ->
-	erldis_client:call(Client, <<"lset ">>, [[Key, Index, size(Value)], [Value]]).
+	erldis_client:sr_scall(Client, bulk_cmd([<<"lset">>, Key, Index], Value)).
 
-lrem(Client, Key, Number, Value) when not is_binary(Value) ->
-	lrem(Client, Key, Number, erldis_client:bin(Value));
 lrem(Client, Key, Number, Value) ->
-	erldis_client:call(Client, <<"lrem ">>, [[Key, Number, size(Value)], [Value]]).
-	
-lpop(Client, Key) -> erldis_client:sr_scall(Client, <<"lpop ">>, [Key]).
+	numeric(erldis_client:sr_scall(Client, bulk_cmd([<<"lrem">>, Key, Number], Value))).
 
-rpop(Client, Key) -> erldis_client:sr_scall(Client, <<"rpop ">>, [Key]).
+lpop(Client, Key) -> erldis_client:sr_scall(Client, inline_cmd(<<"lpop">>, Key)).
 
+rpop(Client, Key) -> erldis_client:sr_scall(Client, inline_cmd(<<"rpop">>, Key)).
+
+% TODO: inline_cmd
 blpop(Client, Keys) -> erldis_client:bcall(Client, <<"blpop ">>, Keys, infinity).
 blpop(Client, Keys, Timeout) -> erldis_client:bcall(Client, <<"blpop ">>, Keys, Timeout).
 
@@ -202,80 +124,187 @@ brpop(Client, Keys, Timeout) -> erldis_client:bcall(Client, <<"brpop ">>, Keys, 
 %% Commands operating on sets %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-sadd(Client, Key, Value) -> internal_set_like(Client, <<"sadd ">>, Key, Value).
+sadd(Client, Key, Member) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"sadd">>, Key], Member)).
 
-srem(Client, Key, Value) -> internal_set_like(Client, <<"srem ">>, Key, Value).
+srem(Client, Key, Member) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"srem">>, Key], Member)).
 
-smove(Client, SrcKey, DstKey, Member) when not is_binary(Member) ->
-	smove(Client, SrcKey, DstKey, erldis_client:bin(Member));
+% TODO: test
 smove(Client, SrcKey, DstKey, Member) ->
-	erldis_client:call(Client, <<"smove ">>, [[SrcKey, DstKey, size(Member)], [Member]]).
+	erldis_client:sr_scall(Client, bulk_cmd([<<"smove">>, SrcKey, DstKey], Member)).
 
-scard(Client, Key) -> numeric(erldis_client:sr_scall(Client, <<"scard ">>, [Key])).
+scard(Client, Key) ->
+	numeric(erldis_client:sr_scall(Client, inline_cmd(<<"scard ">>, Key))).
 
-sismember(Client, Key, Value) -> internal_set_like(Client, <<"sismember ">>, Key, Value).
+sismember(Client, Key, Member) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"sismember">>, Key], Member)).
 
-sintersect(Client, Keys) -> erldis_client:scall(Client, <<"sinter ">>, Keys).
+sintersect(Client, Keys) -> sinter(Client, Keys).
 
-sinter(Client, Keys) -> sintersect(Client, Keys).
+sinter(Client, Keys) -> erldis_client:scall(Client, inline_cmd([<<"sinter">> | Keys])).
 
 sinterstore(Client, DstKey, Keys) ->
-	erldis_client:scall(Client, <<"sinterstore ">>, [DstKey|Keys]).
+	numeric(erldis_client:sr_scall(Client, inline_cmd([<<"sinterstore">>, DstKey | Keys]))).
 
-sunion(Client, Keys) -> erldis_client:scall(Client, <<"sunion ">>, Keys).
+sunion(Client, Keys) ->
+	erldis_client:scall(Client, inline_cmd([<<"sunion">> | Keys])).
 
 sunionstore(Client, DstKey, Keys) ->
-	erldis_client:scall(Client, <<"sunionstore ">>, [DstKey|Keys]).
+	numeric(erldis_client:sr_scall(Client, inline_cmd([<<"sunionstore">>, DstKey | Keys]))).
 
-sdiff(Client, Keys) -> erldis_client:scall(Client, <<"sdiff ">>, Keys).
+sdiff(Client, Keys) -> erldis_client:scall(Client, inline_cmd([<<"sdiff">> | Keys])).
 
 sdiffstore(Client, DstKey, Keys) ->
-	erldis_client:scall(Client, <<"sdiffstore ">>, [DstKey|Keys]).
+	numeric(erldis_client:sr_scall(Client, inline_cmd([<<"sdiffstore">>, DstKey | Keys]))).
 
-smembers(Client, Key) -> erldis_client:scall(Client, <<"smembers ">>, [Key]).
+smembers(Client, Key) ->
+	erldis_client:scall(Client, inline_cmd(<<"smembers">>, Key)).
 
-% TODO: ordered sets
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Commands operating on ordered sets %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+zadd(Client, Key, Score, Member) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"zadd">>, Key, Score], Member)).
+
+zrem(Client, Key, Member) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"zrem">>, Key], Member)).
+
+zincrby(Client, Key, By, Member) ->
+	numeric(erldis_client:sr_scall(Client, bulk_cmd([<<"zincrby">>, Key, By], Member))).
+
+zrange(Client, Key, Start, End) ->
+	erldis_client:scall(Client, inline_cmd([<<"zrange">>, Key, Start, End])).
+
+% TODO: return [{member, score}] for withscores functions
+%zrange_withscores(Client, Key, Start, End) ->
+%	erldis_client:scall(Client, <<"zrange ">>, [Key, Start, End, <<"withscores">>]).
+
+zrevrange(Client, Key, Start, End) ->
+	erldis_client:scall(Client, inline_cmd([<<"zrevrange">>, Key, Start, End])).
+
+%zrevrange_withscores(Client, Key, Start, End) ->
+%	erldis_client:scall(Client, <<"zrevrange ">>, [Key, Start, End, <<"withscores">>]).
+
+zrangebyscore(Client, Key, Min, Max) ->
+	erldis_client:scall(Client, inline_cmd([<<"zrangebyscore ">>, Key, Min, Max])).
+
+zrangebyscore(Client, Key, Min, Max, Offset, Count) ->
+	Cmd = inline_cmd([<<"zrangebyscore ">>, Key, Min, Max, <<"limit">>, Offset, Count]),
+	erldis_client:scall(Client, Cmd).
+
+zcard(Client, Key) ->
+	numeric(erldis_client:sr_scall(Client, inline_cmd(<<"zcard">>, Key))).
+
+zscore(Client, Key, Member) ->
+	numeric(erldis_client:sr_scall(Client, bulk_cmd([<<"zscore">>, Key], Member))).
+
+zremrangebyscore(Client, Key, Min, Max) ->
+	Cmd = inline_cmd([<<"zremrangebyscore ">>, Key, Min, Max]),
+	numeric(erldis_client:sr_scall(Client, Cmd)).
 
 %%%%%%%%%%%%%
 %% Sorting %%
 %%%%%%%%%%%%%
 
-sort(Client, Key) -> erldis_client:scall(Client, <<"sort ">>, [Key]).
+sort(Client, Key) -> erldis_client:scall(Client, inline_cmd([<<"sort">>, Key])).
 
-sort(Client, Key, Extra) -> erldis_client:scall(Client, <<"sort ">>, [Key, Extra]).	
+% TODO: better support for Extra options (LIMIT, ASC|DESC, BY, GET, STORE)
+sort(Client, Key, Extra) ->
+	erldis_client:scall(Client, inline_cmd([<<"sort">>, Key, Extra])).	
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Multiple DB commands %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
-select(Client, Index) -> erldis_client:sr_scall(Client, <<"select ">>, [Index]).
+select(Client, Index) ->
+	erldis_client:sr_scall(Client, inline_cmd(<<"select">>, Index)).
 
 move(Client, Key, DBIndex) ->
-	erldis_client:scall(Client, <<"move ">>, [Key, DBIndex]).
+	erldis_client:sr_scall(Client, inline_cmd([<<"move">>, Key, DBIndex])).
 
-flushdb(Client) -> erldis_client:sr_scall(Client, <<"flushdb ">>).
+flushdb(Client) -> erldis_client:sr_scall(Client, <<"flushdb">>).
 
-flushall(Client) -> erldis_client:sr_scall(Client, <<"flushall ">>).
+flushall(Client) -> erldis_client:sr_scall(Client, <<"flushall">>).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Persistence control commands %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-save(Client) -> erldis_client:scall(Client, <<"save ">>).
+save(Client) -> erldis_client:scall(Client, <<"save">>).
 
-bgsave(Client) -> erldis_client:scall(Client, <<"bgsave ">>).
+bgsave(Client) -> erldis_client:scall(Client, <<"bgsave">>).
 
-lastsave(Client) -> erldis_client:scall(Client, <<"lastsave ">>).
+lastsave(Client) -> erldis_client:scall(Client, <<"lastsave">>).
 
-shutdown(Client) -> erldis_client:scall(Client, <<"shutdown ">>).
+shutdown(Client) -> erldis_client:scall(Client, <<"shutdown">>).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Remote server control commands %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-info(Client) -> erldis_client:scall(Client, <<"info ">>).
+auth(Client, Password) ->
+	erldis_client:scall(Client, inline_cmd(<<"auth">>, Password)).
+
+info(Client) -> erldis_client:scall(Client, <<"info">>).
 
 slaveof(Client, Host, Port) ->
-	erldis_client:scall(Client, <<"slaveof ">>, [Host, Port]).
+	erldis_client:scall(Client, inline_cmd([<<"slaveof">>, Host, Port])).
 
-slaveof(Client) -> erldis_client:scall(Client, <<"slaveof ">>, ["no one"]).
+slaveof(Client) ->
+	erldis_client:scall(Client, inline_cmd([<<"slaveof">>, <<"no one">>])).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Multi/Exec Pipelining %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+get_all_results(Client) -> gen_server2:call(Client, get_all_results).
+
+set_pipelining(Client, Bool) -> gen_server2:cast(Client, {pipelining, Bool}).
+
+exec(Client, Fun) ->
+	case erldis_client:sr_scall(Client, <<"multi">>) of
+		ok ->
+			set_pipelining(Client, true),
+			Fun(Client),
+			get_all_results(Client),
+			set_pipelining(Client, false),
+			erldis_client:scall(Client, <<"exec">>);
+		_ ->
+			{error, unsupported}
+	end.
+
+%%%%%%%%%%%%%%%%%%%%%%%%
+%% command generators %%
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+inline_cmd(Args) -> make_cmd([Args]).
+
+inline_cmd(Cmd, Key) -> inline_cmd([Cmd, Key]).
+
+bulk_cmd(Line1, Bulk) ->
+	Bin = erldis_binaries:to_binary(Bulk),
+	make_cmd([Line1 ++ [size(Bin)], [Bin]]).
+
+make_cmd(Lines) ->
+	BLines = [erldis_binaries:join(Line, <<" ">>) || Line <- Lines],
+	erldis_binaries:join(BLines, <<"\r\n">>).
+
+%%%%%%%%%%%%%%%%%%%%%%
+%% reply conversion %%
+%%%%%%%%%%%%%%%%%%%%%%
+
+numeric(false) -> 0;
+numeric(true) -> 1;
+numeric(nil) -> 0;
+numeric(I) when is_binary(I) -> numeric(binary_to_list(I));
+numeric(I) when is_list(I) ->
+	try list_to_integer(I)
+	catch
+		error:badarg ->
+			try list_to_float(I)
+			catch error:badarg -> I
+			end
+	end;
+numeric(I) -> I.

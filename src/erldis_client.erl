@@ -22,7 +22,7 @@
 -export([start_link/0, start_link/1, start_link/2, start_link/3, start_link/4]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 		 terminate/2, code_change/3]).
--export([bin/1, format/2, format/1, sformat/1]).
+-export([format/2, format/1, sformat/1]).
 -define(EOL, "\r\n").
 
 -define(default_timeout, 5000). %% same as in gen.erl in stdlib
@@ -31,48 +31,18 @@
 %% helpers %%
 %%%%%%%%%%%%%
 
-bin(X) when is_list(X) ->
-	list_to_binary(X);
-bin(X) when is_atom(X) ->
-	list_to_binary(atom_to_list(X));
-bin(X) when is_binary(X) ->
-	X;
-bin(X) when is_integer(X) ->
-	list_to_binary(integer_to_list(X));
-bin(X) when is_float(X) ->
-	list_to_binary(float_to_list(X));
-bin(X) ->
-	term_to_binary(X).
-
-format(Lines) ->
-	format(Lines, <<>>).
+format(Lines) -> format(Lines, <<>>).
 
 format([], Result) ->
 	Result;
 format([Line|Rest], <<>>) ->
-	JoinedLine = binary_join(Line, <<" ">>),
-	format(Rest, JoinedLine);
+	format(Rest, erldis_binaries:join(Line, <<" ">>));
 format([Line|Rest], Result) ->
-	Sep = <<?EOL>>,
-	JoinedLine = binary_join(Line, <<" ">>),
-	format(Rest, <<Result/binary, Sep/binary, JoinedLine/binary>>).
+	JoinedLine = erldis_binaries:join(Line, <<" ">>),
+	format(Rest, <<Result/binary, "\r\n", JoinedLine/binary>>).
 
-sformat(<<>>)->
-	<<>>;
-sformat(Line) ->
-	format([Line], <<>>).
-
-binary_join([], _)->
-	<<>>;
-binary_join(Array, Sep)->
-	F = fun(Elem, Acc) ->
-			E2 = bin(Elem),
-			<<Acc/binary, Sep/binary, E2/binary>>
-		end,
-	
-	Sz = size(Sep),
-	<<_:Sz/bytes, Result/binary>> = lists:foldl(F, <<>>, Array),
-	Result.
+sformat(<<>>)-> <<>>;
+sformat(Line) -> format([Line], <<>>).
 
 trim2({ok, S}) ->
 	Read = size(S)-2,
@@ -94,7 +64,7 @@ app_get_env(AppName, Varname, Default) ->
 %%%%%%%%%%%%%%%%%%%
 
 select(Client, DB) ->
-	DBB = list_to_binary(integer_to_list(DB)),
+	DBB = erldis_binaries:to_binary(DB),
 	[ok] = scall(Client, <<"select ", DBB/binary>>),
 	Client.
 
@@ -132,7 +102,7 @@ bcall(Client, Cmd, Args, Timeout) ->
 set_call(Client, Cmd, Key, Val) when is_binary(Val) ->
 	call(Client, Cmd, [[Key, erlang:size(Val)], [Val]]);
 set_call(Client, Cmd, Key, Val) ->
-	set_call(Client, Cmd, Key, bin(Val)).
+	set_call(Client, Cmd, Key, erldis_binaries:to_binary(Val)).
 
 % Erlang uses milliseconds, with symbol "infinity" for "wait forever";
 % redis uses seconds, with 0 for "wait forever".
