@@ -177,15 +177,14 @@ zincrby(Client, Key, By, Member) ->
 zrange(Client, Key, Start, End) ->
 	erldis_client:scall(Client, inline_cmd([<<"zrange">>, Key, Start, End])).
 
-% TODO: return [{member, score}] for withscores functions
-%zrange_withscores(Client, Key, Start, End) ->
-%	erldis_client:scall(Client, <<"zrange ">>, [Key, Start, End, <<"withscores">>]).
+zrange_withscores(Client, Key, Start, End) ->
+	withscores(erldis_client:scall(Client, <<"zrange ">>, [Key, Start, End, <<"withscores">>])).
 
 zrevrange(Client, Key, Start, End) ->
 	erldis_client:scall(Client, inline_cmd([<<"zrevrange">>, Key, Start, End])).
 
-%zrevrange_withscores(Client, Key, Start, End) ->
-%	erldis_client:scall(Client, <<"zrevrange ">>, [Key, Start, End, <<"withscores">>]).
+zrevrange_withscores(Client, Key, Start, End) ->
+	withscores(erldis_client:scall(Client, <<"zrevrange ">>, [Key, Start, End, <<"withscores">>])).
 
 zrangebyscore(Client, Key, Min, Max) ->
 	erldis_client:scall(Client, inline_cmd([<<"zrangebyscore ">>, Key, Min, Max])).
@@ -308,3 +307,12 @@ numeric(I) when is_list(I) ->
 			end
 	end;
 numeric(I) -> I.
+
+withscores(L) -> 
+  withscores(L,[]).
+withscores([], Acc) ->
+  lists:reverse(Acc);
+withscores([_], _Acc) ->
+  throw({error, invalid_scores_list});
+withscores([Member|[Score|T]], Acc) ->
+  withscores(T, [{Member, numeric(Score)}|Acc]).

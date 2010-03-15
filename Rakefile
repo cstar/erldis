@@ -20,12 +20,12 @@ end
 desc "installs in $ERL_TOP/lib/"
 task :install =>  [:build] do |t|
    FileList.new('ebin/*.app').each do |dir|
-     vsn = extract_version_information("vsn.config","vsn").gsub("\"","")
+     #vsn = extract_version_information("vsn.config","vsn").gsub("\"","")
      name = dir.gsub("ebin/","").gsub(".app","")
-     destination =  "#{erlang_home}/lib/#{name}-#{vsn}"
+     destination =  "#{erlang_home}/lib/#{name}"
      puts "#{name} will be installed in #{destination}"
      sh "mkdir -p #{destination}"
-     %w{ priv ebin docs include }.each do |d|
+     %w{ebin doc include }.each do |d|
        sh "cp -R #{d} #{destination}"
      end
    end
