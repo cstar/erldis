@@ -130,6 +130,9 @@ sadd(Client, Key, Member) ->
 srem(Client, Key, Member) ->
 	erldis_client:sr_scall(Client, bulk_cmd([<<"srem">>, Key], Member)).
 
+spop(Client, Key) ->
+        erldis_client:sr_scall(Client, inline_cmd(<<"spop">>, Key)).
+
 % TODO: test
 smove(Client, SrcKey, DstKey, Member) ->
 	erldis_client:sr_scall(Client, bulk_cmd([<<"smove">>, SrcKey, DstKey], Member)).
