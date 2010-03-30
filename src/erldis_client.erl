@@ -23,6 +23,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 		 terminate/2, code_change/3]).
 -export([format/2, format/1, sformat/1]).
+-export([subscribe/4, unsubscribe/3]).
 -define(EOL, "\r\n").
 
 -define(default_timeout, 5000). %% same as in gen.erl in stdlib
@@ -104,6 +105,17 @@ set_call(Client, Cmd, Key, Val) when is_binary(Val) ->
 set_call(Client, Cmd, Key, Val) ->
 	set_call(Client, Cmd, Key, erldis_binaries:to_binary(Val)).
 
+subscribe(Client, Cmd, Class, Pid)->
+  case gen_server2:call(Client, {subscribe, Cmd, Class, Pid}, ?default_timeout) of
+				{error, Reason} -> throw({error, Reason});
+				Retval -> Retval
+			end.
+unsubscribe(Client, Cmd, Class)->
+  case gen_server2:call(Client, {unsubscribe, Cmd, Class}, ?default_timeout) of
+				{error, Reason} -> throw({error, Reason});
+				Retval -> Retval
+			end.
+
 % Erlang uses milliseconds, with symbol "infinity" for "wait forever";
 % redis uses seconds, with 0 for "wait forever".
 server_timeout(infinity) -> 0;
@@ -116,7 +128,6 @@ erlang_timeout(V) when is_number(V) -> V + ?default_timeout.
 
 send(Client, Cmd, Timeout) ->
 	Piped = gen_server2:call(Client, is_pipelined),
-	
 	if
 		Piped ->
 			gen_server2:cast(Client, {send, Cmd});
@@ -238,7 +249,7 @@ stop(Client) -> gen_server2:call(Client, disconnect).
 init([Host, Port]) ->
 	process_flag(trap_exit, true),
 	{ok, Timeout} = app_get_env(erldis, timeout, 500),
-	State = #redis{calls=queue:new(), host=Host, port=Port, timeout=Timeout},
+	State = #redis{calls=queue:new(), host=Host, port=Port, timeout=Timeout, subscribers=dict:new()},
 	
 	case connect_socket(State, once) of
 		{error, Why} -> {stop, {socket_error, Why}};
@@ -315,6 +326,32 @@ handle_call({send, Cmd}, From, State1) ->
 					{noreply, State#redis{calls=Queue, remaining=1}}
 			end;
 		{error, Reason} ->
+			%error_logger:error_report([{send, Cmd}, {error, Reason}]),
+			{stop, timeout, {error, Reason}, State}
+	end;
+handle_call({subscribe, Cmd, Class, Pid}, From, State1)->
+  State = ensure_started(State1),
+  case gen_tcp:send(State#redis.socket, [Cmd | <<?EOL>>]) of
+		ok ->
+		  Queue = queue:in(From, State#redis.calls),
+		  Subscribers = dict:store(Class, Pid, State#redis.subscribers),
+		  {noreply, State#redis{calls=Queue, remaining=1, subscribers=Subscribers}};
+		{error, Reason} ->
+			error_logger:error_report([{send, Cmd}, {error, Reason}]),
+			{stop, timeout, {error, Reason}, State}
+	end;
+handle_call({unsubscribe, Cmd, Class}, From, State1)->
+   State = ensure_started(State1),
+   case gen_tcp:send(State#redis.socket, [Cmd | <<?EOL>>]) of
+		ok ->
+		  Queue = queue:in(From, State#redis.calls),
+		  Subscribers =  if Class == <<"">> ->
+		      dict:new();
+		    true ->
+		      dict:erase(Class, State#redis.subscribers)
+		  end,
+		  {noreply, State#redis{calls=Queue, remaining=1, subscribers=Subscribers}};
+		{error, Reason} ->
 			error_logger:error_report([{send, Cmd}, {error, Reason}]),
 			{stop, timeout, {error, Reason}, State}
 	end;
@@ -350,11 +387,11 @@ handle_cast(_, State) ->
 
 recv_value(Socket, NBytes) ->
 	inet:setopts(Socket, [{packet, 0}]), % go into raw mode to read bytes
-	
 	case gen_tcp:recv(Socket, NBytes+2) of
 		{ok, Packet} ->
+		  %error_logger:error_report({line, Packet}),
 			inet:setopts(Socket, [{packet, line}]), % go back to line mode
-			trim2({ok, Packet});
+			trim2(Packet);
 		{error, Reason} ->
 			error_logger:error_report([{recv, NBytes}, {error, Reason}]),
 			throw({error, Reason})
@@ -400,7 +437,6 @@ send_reply(State) ->
 
 parse_state(State, Socket, Data) ->
 	Parse = erldis_proto:parse(State#redis.pstate, trim2(Data)),
-	
 	case {State#redis.remaining-1, Parse} of
 		{0, error} ->
 			% next line is the error string
@@ -420,8 +456,17 @@ parse_state(State, Socket, Data) ->
 		{0, {read, NBytes}} ->
 			% reply with Value added to buffer
 			Value = recv_value(Socket, NBytes),
-			Buffer = [Value | State#redis.buffer],
-			send_reply(State#redis{buffer=Buffer});
+			case [Value | State#redis.buffer] of
+			  [PubSubValue, Class, <<"message">>] = M ->
+			    case dict:find(Class, State#redis.subscribers) of
+			      {ok, Pid} -> 
+			        Pid ! {message, Class, PubSubValue};
+			      _ ->
+			        error_logger:error_report([lost_message, {class, Class}])
+			    end;
+			  Buffer -> 
+			    send_reply(State#redis{buffer=Buffer})
+			end;
 		{N, {read, NBytes}} ->
 			% accumulate multi bulk reply
 			Value = recv_value(Socket, NBytes),
@@ -437,7 +482,8 @@ parse_state(State, Socket, Data) ->
 	end.
 
 handle_info({tcp, Socket, Data}, State) ->
-	case (catch parse_state(State, Socket, Data)) of
+  %error_logger:error_report([{data, Data}, {state, State}]),
+	case ( parse_state(State, Socket, Data)) of
 		{error, Reason} ->
 			{stop, Reason, State};
 		NewState ->

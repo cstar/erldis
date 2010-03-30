@@ -215,6 +215,30 @@ sort(Client, Key) -> erldis_client:scall(Client, inline_cmd([<<"sort">>, Key])).
 % TODO: better support for Extra options (LIMIT, ASC|DESC, BY, GET, STORE)
 sort(Client, Key, Extra) ->
 	erldis_client:scall(Client, inline_cmd([<<"sort">>, Key, Extra])).	
+	
+%%%%%%%%%%%%%
+%% PubSub  %%
+%%%%%%%%%%%%%
+
+publish(Client, Class, Value) ->
+  numeric(
+    erldis_client:sr_scall(Client, bulk_cmd([<<"publish">>, Class], Value))).
+unsubscribe(Client)->
+  unsubscribe(Client, <<"">>).
+unsubscribe(Client, Class) ->
+   case erldis_client:unsubscribe(Client, inline_cmd([<<"unsubscribe">>, Class]), Class) of 
+      [<<"unsubscribe">>, FirstClass, N] ->
+        {FirstClass, numeric(N)};
+     E ->
+        E
+    end.
+subscribe(Client, Class, Pid) ->
+   case erldis_client:subscribe(Client, inline_cmd([<<"subscribe">>, Class]), Class, Pid) of
+     [<<"subscribe">>, Class, N] ->
+       numeric(N);
+      _ ->
+        error
+    end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Multiple DB commands %%
