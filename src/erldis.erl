@@ -220,21 +220,21 @@ sort(Client, Key, Extra) ->
 %% PubSub  %%
 %%%%%%%%%%%%%
 
-publish(Client, Class, Value) ->
+publish(Client, Channel, Value) ->
   numeric(
-    erldis_client:sr_scall(Client, bulk_cmd([<<"publish">>, Class], Value))).
+    erldis_client:sr_scall(Client, bulk_cmd([<<"publish">>, Channel], Value))).
 unsubscribe(Client)->
   unsubscribe(Client, <<"">>).
-unsubscribe(Client, Class) ->
-   case erldis_client:unsubscribe(Client, inline_cmd([<<"unsubscribe">>, Class]), Class) of 
-      [<<"unsubscribe">>, FirstClass, N] ->
-        {FirstClass, numeric(N)};
+unsubscribe(Client, Channel) ->
+   case erldis_client:unsubscribe(Client, inline_cmd([<<"unsubscribe">>, Channel]), Channel) of 
+      [<<"unsubscribe">>, FirstChan, N] ->
+        {FirstChan, numeric(N)};
      E ->
         E
     end.
-subscribe(Client, Class, Pid) ->
-   case erldis_client:subscribe(Client, inline_cmd([<<"subscribe">>, Class]), Class, Pid) of
-     [<<"subscribe">>, Class, N] ->
+subscribe(Client, Channel, Pid) ->
+   case erldis_client:subscribe(Client, inline_cmd([<<"subscribe">>, Channel]), Channel, Pid) of
+     [<<"subscribe">>, Channel, N] ->
        numeric(N);
       _ ->
         error
