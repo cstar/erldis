@@ -131,7 +131,7 @@ srem(Client, Key, Member) ->
 	erldis_client:sr_scall(Client, bulk_cmd([<<"srem">>, Key], Member)).
 
 spop(Client, Key) ->
-        erldis_client:sr_scall(Client, inline_cmd(<<"spop">>, Key)).
+	erldis_client:sr_scall(Client, inline_cmd(<<"spop">>, Key)).
 
 % TODO: test
 smove(Client, SrcKey, DstKey, Member) ->
@@ -336,10 +336,10 @@ numeric(I) when is_list(I) ->
 numeric(I) -> I.
 
 withscores(L) -> 
-  withscores(L,[]).
+	withscores(L,[]).
 withscores([], Acc) ->
-  lists:reverse(Acc);
+	lists:reverse(Acc);
 withscores([_], _Acc) ->
-  throw({error, invalid_scores_list});
-withscores([Member|[Score|T]], Acc) ->
-  withscores(T, [{Member, numeric(Score)}|Acc]).
+	erlang:error(badarg);
+withscores([Member, Score | T], Acc) ->
+	withscores(T, [{Member, numeric(Score)} | Acc]).
