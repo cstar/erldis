@@ -36,3 +36,24 @@ pubsub_test()->
     100 ->
       ?assertEqual(true, false) %TODO not proud
   end.
+  
+pubsub_multiple_test()->
+  {ok, Pub} = erldis:connect("localhost", 6379),
+  {ok, Sub} = erldis:connect("localhost", 6379),
+  ?assertEqual(1, erldis:subscribe(Sub, <<"multibidule">>, self())),
+  ?assertEqual(1, erldis:publish(Pub, <<"multibidule">>, <<"bar">>)),
+  receive
+    {message, <<"multibidule">>, M1} ->
+      ?assertEqual(<<"bar">>, M1)
+  after
+    100 ->
+      ?assertEqual(true, false) %TODO not proud
+  end,
+  ?assertEqual(1, erldis:publish(Pub, <<"multibidule">>, <<"baz">>)),
+  receive
+    {message, <<"multibidule">>, M2} ->
+      ?assertEqual(<<"baz">>, M2)
+  after
+    100 ->
+      ?assertEqual(true, false) %TODO not proud
+  end.

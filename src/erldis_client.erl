@@ -463,7 +463,8 @@ parse_state(State, Socket, Data) ->
 			        Pid ! {message, Class, PubSubValue};
 			      _ ->
 			        error_logger:error_report([lost_message, {class, Class}])
-			    end;
+			    end,
+			    send_reply(State#redis{buffer=[]});
 			  Buffer -> 
 			    send_reply(State#redis{buffer=Buffer})
 			end;
