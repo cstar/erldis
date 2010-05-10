@@ -295,6 +295,21 @@ connect_socket(State, _) ->
 %% handle_call %%
 %%%%%%%%%%%%%%%%%
 
+% Not sure about style here
+%
+% Solves issue of remaining getting reset while still accumulating multi-bulk
+% reply
+dont_reset_remaining(State, Queue) ->
+  case State#redis.remaining of
+    0 -> State#redis{calls=Queue, remaining=1};
+    _ -> State#redis{calls=Queue}
+  end.
+dont_reset_remaining(State, Queue, DB) ->
+  case State#redis.remaining of
+    0 -> State#redis{calls=Queue, remaining=1, db=DB};
+    _ -> State#redis{calls=Queue, db=DB}
+  end.
+
 handle_call(is_pipelined, _From, State)->
   {reply, State#redis.pipeline, State};
 handle_call(get_all_results, From, #redis{pipeline=true, calls=Calls} = State) ->
@@ -321,9 +336,9 @@ handle_call({send, Cmd}, From, State1) ->
 			
 			case Cmd of
 				<<"select ", DB/binary>> ->
-					{noreply, State#redis{calls=Queue, remaining=1, db=DB}};
+					{noreply, dont_reset_remaining(State, Queue, DB)};
 				_ ->
-					{noreply, State#redis{calls=Queue, remaining=1}}
+					{noreply, dont_reset_remaining(State, Queue)}
 			end;
 		{error, Reason} ->
 			%error_logger:error_report([{send, Cmd}, {error, Reason}]),
