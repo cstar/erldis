@@ -45,6 +45,26 @@ set_test() ->
 	?assertEqual([], erldis:smembers(Client, <<"set">>)),
 	?assertEqual(shutdown, erldis:quit(Client)).
 
+hash_test() ->
+	{ok, Client} = erldis:connect(),
+	?assertEqual(ok, erldis:flushdb(Client)),
+	?assertEqual(true, erldis:hset(Client, <<"key">>, <<"field">>, <<"value">>)),
+	?assertEqual(<<"value">>, erldis:hget(Client, <<"key">>, <<"field">>)),
+	?assertEqual(20, erldis:hincrby(Client, <<"increment-key">>, <<"by-20">>, 20)),
+	?assertEqual(40, erldis:hincrby(Client, <<"increment-key">>, <<"by-20">>, 20)),
+	?assertEqual(<<"40">>, erldis:hget(Client, <<"increment-key">>, <<"by-20">>)),
+	?assertEqual(true, erldis:hdel(Client, <<"increment-key">>, <<"by-20">>)),
+	?assertEqual(false, erldis:hdel(Client, <<"increment-key">>, <<"by-20">>)),
+	?assertEqual(20, erldis:hincrby(Client, <<"increment-key">>, <<"by-20">>, 20)),
+	?assertEqual(1, erldis:hlen(Client, <<"increment-key">>)),
+	?assertEqual(1, erldis:hlen(Client, <<"key">>)),
+	?assertEqual(true, erldis:hexists(Client, <<"key">>, <<"field">>)),
+	?assertEqual(false, erldis:hexists(Client, <<"key">>, <<"non-field">>)),
+	?assertEqual([<<"field">>], erldis:hkeys(Client, <<"key">>)),
+	?assertEqual([<<"by-20">>], erldis:hkeys(Client, <<"increment-key">>)),
+	?assertEqual([<<"by-20">>, <<"20">>], erldis:hgetall(Client, <<"increment-key">>)),
+	?assertEqual([<<"field">>, <<"value">>], erldis:hgetall(Client, <<"key">>)).
+
 list_test() ->
 	{ok, Client} = erldis:connect("localhost", 6379),
 	?assertEqual(ok, erldis:flushdb(Client)),

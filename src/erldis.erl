@@ -206,6 +206,37 @@ zremrangebyscore(Client, Key, Min, Max) ->
 	Cmd = inline_cmd([<<"zremrangebyscore ">>, Key, Min, Max]),
 	numeric(erldis_client:sr_scall(Client, Cmd)).
 
+%%%%%%%%%%%%%%%%%%%
+%% Hash commands %%
+%%%%%%%%%%%%%%%%%%%
+
+hset(Client, Key, Field, Value) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"hset">>, Key, Field], Value)).
+
+hget(Client, Key, Field) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"hget">>, Key], Field)).
+
+%hmset(Client, Key, Fields) ->
+%	erldis_client:sr_scall(Client, bulk_cmd([<<"hmset">>, Key], Fields)).
+
+hincrby(Client, Key, Field, Incr) ->
+	erldis_client:sr_scall(Client, inline_cmd([<<"hincrby">>, Key, Field, Incr])).
+
+hdel(Client, Key, Field) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"hdel">>, Key], Field)).
+
+hlen(Client, Key) ->
+	numeric(erldis_client:sr_scall(Client, inline_cmd(<<"hlen">>, Key))).
+
+hexists(Client, Key, Field) ->
+	erldis_client:sr_scall(Client, bulk_cmd([<<"hexists">>, Key], Field)).
+
+hkeys(Client, Key) ->
+	erldis_client:scall(Client, inline_cmd([<<"hkeys">>, Key])).
+
+hgetall(Client, Key) ->
+	erldis_client:scall(Client, inline_cmd([<<"hgetall">>, Key])).
+
 %%%%%%%%%%%%%
 %% Sorting %%
 %%%%%%%%%%%%%
