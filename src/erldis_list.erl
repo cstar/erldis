@@ -25,10 +25,10 @@ is_empty(Key, Client) -> len(Key, Client) == 0.
 len(Key, Client) -> erldis:llen(Client, Key).
 
 in(Item, Key, Client) ->
-	ok = erldis:rpush(Client, Key, Item).
+	erldis:rpush(Client, Key, Item).
 
 in_r(Item, Key, Client) ->
-	ok = erldis:lpush(Client, Key, Item).
+	erldis:lpush(Client, Key, Item).
 
 out(Key, Client) ->
 	case erldis:lpop(Client, Key) of

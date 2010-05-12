@@ -86,10 +86,10 @@ decrby(Client, Key, By) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 rpush(Client, Key, Value) ->
-	erldis_client:sr_scall(Client, bulk_cmd([<<"rpush">>, Key], Value)).
+	numeric(erldis_client:sr_scall(Client, bulk_cmd([<<"rpush">>, Key], Value))).
 
 lpush(Client, Key, Value) ->
-	erldis_client:sr_scall(Client, bulk_cmd([<<"lpush">>, Key], Value)).
+	numeric(erldis_client:sr_scall(Client, bulk_cmd([<<"lpush">>, Key], Value))).
 
 llen(Client, Key) ->
 	numeric(erldis_client:sr_scall(Client, inline_cmd(<<"llen">>, Key))).
