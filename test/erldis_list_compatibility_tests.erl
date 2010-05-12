@@ -39,8 +39,8 @@ incrdecr_test() ->
 list_test() ->
 	Client = setup(),
 	?assertEqual(erldis:exists(Client, "foo"), false),
-	?assertEqual(erldis:lpush(Client, "foo", "a"), ok),
-	?assertEqual(erldis:rpush(Client, "foo", "b"), ok),
+	?assertEqual(erldis:lpush(Client, "foo", "a"), 1),
+	?assertEqual(erldis:rpush(Client, "foo", "b"), 2),
 	?assertEqual(erldis:lindex(Client, "foo", 0), <<"a">>),
 	?assertEqual(erldis:lindex(Client, "foo", 1), <<"b">>),
 	?assertEqual(erldis:llen(Client, "foo"), 2),
@@ -58,13 +58,16 @@ set_test() ->
 json_test() ->
 	% requires yaws json module
 	Arr = {array, ["a", "b", "c"]},
-	Json = json:encode(Arr),
-	Client = setup(),
-	?assertEqual(erldis:set(Client, "json", Json), ok),
-	GetJson = erldis:get(Client, "json"),
-	?assertEqual(GetJson, list_to_binary(Json)),
-	{ok, Arr2} = json:decode_string(binary_to_list(GetJson)),
-	?assertEqual(Arr, Arr2).
+        case code:which(json) of
+          non_existing -> ok;
+          _ -> Json = json:encode(Arr),
+          	Client = setup(),
+        	?assertEqual(erldis:set(Client, "json", Json), ok),
+        	GetJson = erldis:get(Client, "json"),
+        	?assertEqual(GetJson, list_to_binary(Json)),
+        	{ok, Arr2} = json:decode_string(binary_to_list(GetJson)),
+        	?assertEqual(Arr, Arr2)
+        end.
 
 setup() ->
 	% setup

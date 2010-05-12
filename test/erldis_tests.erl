@@ -10,9 +10,7 @@ quit_test() ->
 
 utils_test() ->
 	?assertEqual(<<"1">>, erldis_binaries:to_binary(1)),
-	?assertEqual(<<"atom">>, erldis_binaries:to_binary(atom)),
-	?assertEqual(<<"1 2 3">>, erldis_client:format([[1, 2, 3]])),
-	?assertEqual(<<"1 2 3\r\n4 5 6">>, erldis_client:format([[1,2,3], [4,5,6]])).
+	?assertEqual(<<"atom">>, erldis_binaries:to_binary(atom)).
 
 basic_test() ->
 	{ok, Client} = erldis:connect("localhost", 6379),
@@ -48,8 +46,12 @@ set_test() ->
 hash_test() ->
 	{ok, Client} = erldis:connect(),
 	?assertEqual(ok, erldis:flushdb(Client)),
-	?assertEqual(true, erldis:hset(Client, <<"key">>, <<"field">>, <<"value">>)),
+	?assertEqual(1, erldis:hset(Client, <<"key">>, <<"field">>, <<"value">>)),
+	?assertEqual(ok, erldis:hmset(Client, <<"key2">>, [<<"field">>, <<"value2">>])),
+	?assertEqual(ok, erldis:hmset(Client, <<"key2">>, [<<"fieldM">>, <<"valueM">>, <<"fieldK">>, <<"valueK">>])),
 	?assertEqual(<<"value">>, erldis:hget(Client, <<"key">>, <<"field">>)),
+	?assertEqual(<<"value2">>, erldis:hget(Client, <<"key2">>, <<"field">>)),
+	?assertEqual(<<"valueK">>, erldis:hget(Client, <<"key2">>, <<"fieldK">>)),
 	?assertEqual(20, erldis:hincrby(Client, <<"increment-key">>, <<"by-20">>, 20)),
 	?assertEqual(40, erldis:hincrby(Client, <<"increment-key">>, <<"by-20">>, 20)),
 	?assertEqual(<<"40">>, erldis:hget(Client, <<"increment-key">>, <<"by-20">>)),

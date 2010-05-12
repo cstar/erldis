@@ -5,6 +5,7 @@
 me_test()->	
   application:load(erldis),
 	{ok, Client} = erldis_client:connect(),
+	erldis:flushdb(Client),
 	Fun = fun(C)->
 	  erldis:set(C, <<"toto">>, <<"tata">>),
 	  erldis:set(C, <<"toto2">>, <<"tata2">>),

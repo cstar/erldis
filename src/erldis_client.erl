@@ -15,14 +15,13 @@
 
 -include("erldis.hrl").
 
--export([sr_scall/2, sr_scall/3, scall/2, scall/3, scall/4, call/2, call/3, call/4,
-		 bcall/4, set_call/4, send/3]).
+-export([sr_scall/2, scall/2, scall/3, call/2, call/3, bcall/3,
+		 set_call/4, send/3]).
 -export([stop/1, transact/1, transact/2, select/2, info/1]).
 -export([connect/0, connect/1, connect/2, connect/3, connect/4]).
 -export([start_link/0, start_link/1, start_link/2, start_link/3, start_link/4]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
 		 terminate/2, code_change/3]).
--export([format/2, format/1, sformat/1]).
 -export([subscribe/4, unsubscribe/3]).
 -define(EOL, "\r\n").
 
@@ -31,19 +30,6 @@
 %%%%%%%%%%%%%
 %% helpers %%
 %%%%%%%%%%%%%
-
-format(Lines) -> format(Lines, <<>>).
-
-format([], Result) ->
-	Result;
-format([Line|Rest], <<>>) ->
-	format(Rest, erldis_binaries:join(Line, <<" ">>));
-format([Line|Rest], Result) ->
-	JoinedLine = erldis_binaries:join(Line, <<" ">>),
-	format(Rest, <<Result/binary, "\r\n", JoinedLine/binary>>).
-
-sformat(<<>>)-> <<>>;
-sformat(Line) -> format([Line], <<>>).
 
 trim2({ok, S}) ->
 	Read = size(S)-2,
@@ -69,36 +55,28 @@ select(Client, DB) ->
 	[ok] = scall(Client, <<"select ", DBB/binary>>),
 	Client.
 
-sr_scall(Client, Cmd) -> sr_scall(Client, Cmd, []).
-
-sr_scall(Client, Cmd, Args) ->
-	case scall(Client, Cmd, Args) of
+sr_scall(Client, Args) ->
+	case scall(Client, Args) of
 		[R] -> R;
 		[] -> nil;
 		ok -> ok
 	end.
 
 % This is the simple send with a single row of commands
-scall(Client, Cmd) -> scall(Client, Cmd, <<>>, ?default_timeout).
+scall(Client, Args) -> scall(Client, Args, ?default_timeout).
 
-scall(Client, Cmd, Args) -> scall(Client, Cmd, Args, ?default_timeout).
-
-scall(Client, Cmd, Args, Timeout) ->
-	Args2 = sformat(Args),
-	send(Client, <<Cmd/binary, Args2/binary>>, Timeout).
+scall(Client, Args, Timeout) ->
+	send(Client, erldis:multibulk_cmd(Args), Timeout).
 
 % This is the complete send with multiple rows
-call(Client, Cmd) -> call(Client, Cmd, [], ?default_timeout).
+call(Client, Args) -> call(Client, Args, ?default_timeout).
 
-call(Client, Cmd, Args) -> call(Client, Cmd, Args, ?default_timeout).
-
-call(Client, Cmd, Args, Timeout) ->
-	Args2 = format(Args),
-	send(Client, <<Cmd/binary, Args2/binary>>, Timeout).
+call(Client, Args, Timeout) ->
+	send(Client, erldis:multibulk_cmd(Args), Timeout).
 
 % Blocking call with server-side timeout added as final command arg
-bcall(Client, Cmd, Args, Timeout) ->
-    scall(Client, Cmd, Args ++ [server_timeout(Timeout)], erlang_timeout(Timeout)).
+bcall(Client, Args, Timeout) ->
+    scall(Client, Args ++ [server_timeout(Timeout)], erlang_timeout(Timeout)).
 
 set_call(Client, Cmd, Key, Val) when is_binary(Val) ->
 	call(Client, Cmd, [[Key, erlang:size(Val)], [Val]]);
