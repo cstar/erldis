@@ -1,4 +1,4 @@
 .hg/
 .hgignore
 *.beam
-
+.plt
