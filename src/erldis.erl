@@ -1,5 +1,7 @@
 -module(erldis).
 
+-include("erldis.hrl").
+
 -compile(export_all).
 
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -254,28 +256,28 @@ sort(Client, Key, Extra) when is_binary(Key), is_binary(Extra) ->
 
 publish(Client, Channel, Value) ->
   numeric(
-    erldis_client:sr_scall(Client, [<<"publish">>, Channel, Value])).
+	erldis_client:sr_scall(Client, [<<"publish">>, Channel, Value])).
 unsubscribe(Client)->
   unsubscribe(Client, <<"">>).
 unsubscribe(Client, Channel) ->
    U = <<"unsubscribe">>,
    Cmd = case Channel of
-           <<"">> -> [U];
-                _ -> [U, Channel]
-         end,
+		   <<"">> -> [U];
+				_ -> [U, Channel]
+		 end,
    case erldis_client:unsubscribe(Client, multibulk_cmd(Cmd), Channel) of 
-      [<<"unsubscribe">>, FirstChan, N] ->
-        {FirstChan, numeric(N)};
-     E ->
-        E
-    end.
+	  [<<"unsubscribe">>, FirstChan, N] ->
+		{FirstChan, numeric(N)};
+	 E ->
+		E
+	end.
 subscribe(Client, Channel, Pid) ->
    case erldis_client:subscribe(Client, multibulk_cmd([<<"subscribe">>, Channel]), Channel, Pid) of
-     [<<"subscribe">>, Channel, N] ->
-       numeric(N);
-      _ ->
-        error
-    end.
+	 [<<"subscribe">>, Channel, N] ->
+	   numeric(N);
+	  _ ->
+		error
+	end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Multiple DB commands %%
@@ -343,28 +345,31 @@ exec(Client, Fun) ->
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 -define(i2l(X), integer_to_list(X)).
+
 multibulk_cmd(Args) when is_binary(Args) ->
-  multibulk_cmd([Args]);
+	multibulk_cmd([Args]);
 multibulk_cmd(Args) when is_list(Args) ->
-  TotalLength = length(Args),
- 
-  ArgCount = [<<"*">>, ?i2l(TotalLength), <<"\r\n">>],
-  ArgBin = [[<<"$">>, ?i2l(iolist_size(A)), <<"\r\n">>, 
-             A, <<"\r\n">>] || A <- [erldis_binaries:to_binary(B) || B <- Args]],
-
-  [ArgCount, ArgBin].
-
+	TotalLength = length(Args),
+	ArgCount = [<<"*">>, ?i2l(TotalLength), <<?EOL>>],
+	Bins = [erldis_binaries:to_binary(B) || B <- Args],
+	ArgBin = [[<<"$">>, ?i2l(iolist_size(A)), <<?EOL>>, A, <<?EOL>>] || A <- Bins],
+	[ArgCount, ArgBin].
 
 %%%%%%%%%%%%%%%%%%%%%%
 %% reply conversion %%
 %%%%%%%%%%%%%%%%%%%%%%
 
-numeric(false) -> 0;
-numeric(true) -> 1;
-numeric(nil) -> 0;
-numeric(I) when is_binary(I) -> numeric(binary_to_list(I));
+numeric(false) ->
+	0;
+numeric(true) ->
+	1;
+numeric(nil) ->
+	0;
+numeric(I) when is_binary(I) ->
+	numeric(binary_to_list(I));
 numeric(I) when is_list(I) ->
-	try list_to_integer(I)
+	try
+		list_to_integer(I)
 	catch
 		error:badarg ->
 			try list_to_float(I)

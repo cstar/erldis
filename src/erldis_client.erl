@@ -24,7 +24,6 @@
 		 terminate/2, code_change/3]).
 -export([subscribe/4, unsubscribe/3]).
 
--define(EOL, "\r\n").
 -define(default_timeout, 5000). %% same as in gen.erl in stdlib
 
 %%%%%%%%%%%%%
@@ -49,8 +48,7 @@ app_get_env(AppName, Varname, Default) ->
 %%%%%%%%%%%%%%%%%%%
 
 select(Client, DB) ->
-	DBB = erldis_binaries:to_binary(DB),
-	[ok] = scall(Client, <<"select ", DBB/binary>>),
+	erldis:select(Client, DB),
 	Client.
 
 sr_scall(Client, Args) ->
@@ -245,8 +243,12 @@ ensure_started(#redis{socket=undefined, db=DB}=State) ->
 				DB == <<"0">> ->
 					ok;
 				true ->
-					gen_tcp:send(Socket, <<"select ", DB/binary, ?EOL>>),
-					{ok, <<"+OK", _R/binary>>} = gen_tcp:recv(Socket, 10)
+					% send & recv here since don't have an active socket
+					% because we want synchronous result since this is called
+					% from handle_* functions
+					Cmd = erldis:multibulk_cmd([<<"select">>, DB]),
+					gen_tcp:send(Socket, Cmd),
+					{ok, <<"+OK", ?EOL>>} = gen_tcp:recv(Socket, 0)
 			end,
 			
 			inet:setopts(Socket, [{active, once}]),
@@ -271,8 +273,6 @@ connect_socket(State, _) ->
 %% handle_call %%
 %%%%%%%%%%%%%%%%%
 
-% Not sure about style here
-%
 % Solves issue of remaining getting reset while still accumulating multi-bulk
 % reply
 dont_reset_remaining(State, Queue) ->
@@ -289,7 +289,7 @@ dont_reset_remaining(State, Queue, DB) ->
 
 handle_call(is_pipelined, _From, State)->
 	{reply, State#redis.pipeline, State};
-handle_call(get_all_results, From, #redis{pipeline=true, calls=Calls} = State) ->
+handle_call(get_all_results, From, #redis{pipeline=true, calls=Calls}=State) ->
 	case queue:len(Calls) of
 		0 ->
 			% answers came earlier than we could start listening...
@@ -312,7 +312,10 @@ handle_call({send, Cmd}, From, State1) ->
 			Queue = queue:in(From, State#redis.calls),
 			
 			case Cmd of
-				<<"select ", DB/binary>> ->
+				% TODO: is there a cleaner way of extracting select DB command
+				% from multi-bulk commands?
+				[_, [[<<"$">>, _, <<?EOL>>, <<"select">>, <<?EOL>>],
+					 [<<"$">>, _, <<?EOL>>, DB, <<?EOL>>]]] ->
 					{noreply, dont_reset_remaining(State, Queue, DB)};
 				_ ->
 					{noreply, dont_reset_remaining(State, Queue)}

@@ -19,6 +19,6 @@ init(_Args) ->
 	{ok, {{one_for_one, 1, 60}, [
 		% transient restart so client can disconnect safely
 		% timeout so client has time to disconnect on exit
-		{erldis_client, {erldis_client, connect, []},
+		{erldis_client, {erldis_client, start_link, []},
 		 transient, 500, worker, [erldis_client]}
 	]}}.
