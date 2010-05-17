@@ -1,28 +1,26 @@
+ERL=erl
 # store output so is only executed once
 ERL_LIBS=$(shell erl -eval 'io:format("~s~n", [code:lib_dir()])' -s init stop -noshell)
 # get application vsn from app file
 VSN=$(shell erl -pa ebin/ -eval 'application:load(erldis), {ok, Vsn} = application:get_key(erldis, vsn), io:format("~s~n", [Vsn])' -s init stop -noshell)
 
-all:
-	@erl -make
+all: src
 
-clean: clean_tests
-	(cd src;$(MAKE) clean)
-	rm -rf erl_crash.dump *.beam
+src: FORCE
+	@$(ERL) -make
 
-clean_tests:
-	(cd test;$(MAKE) clean)
-	rm -rf erl_crash.dump *.beam	
+clean:
+	rm -f erl_crash.dump *.beam */*.beam
 
-test: FORCE
-	mkdir -p ebin/
-	(cd src;$(MAKE))
-	(cd test;$(MAKE))
-	(cd test;$(MAKE) test)
+TEST_SOURCES := $(wildcard test/*.erl)
+TEST_MODULES = $(TEST_SOURCES:test/%.erl=%)
 
-testrun: all
-	mkdir -p ebin/
-	(cd test;$(MAKE) test)
+test: src FORCE $(TEST_MODULES)
+
+./$(TEST_MODULES):
+	@echo "Running tests for $@"
+	erlc -pa ebin/ -o ebin/ -I include/ test/$@.erl
+	erl -pa ebin/ -run $@ test -run init stop -noshell
 
 install: all	
 	mkdir -p $(ERL_LIBS)/erldis-$(VSN)/ebin

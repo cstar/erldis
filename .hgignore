@@ -3,3 +3,4 @@ syntax: glob
 *.beam
 .plt
 .git
+*~
