@@ -71,6 +71,8 @@ mget(Client, Keys) -> erldis_client:scall(Client, [<<"mget">> | Keys]).
 setnx(Client, Key, Value) ->
 	erldis_client:sr_scall(Client, [<<"setnx">>, Key, Value]).
 
+%% TODO: setex, mset, msetnx
+
 incr(Client, Key) ->
 	numeric(erldis_client:sr_scall(Client, [<<"incr">>, Key])).
 
@@ -82,6 +84,8 @@ decr(Client, Key) ->
 
 decrby(Client, Key, By) ->
 	numeric(erldis_client:sr_scall(Client, [<<"decrby">>, Key, By])).
+
+%% TODO: append, substr
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Commands operating on lists %%
@@ -115,12 +119,15 @@ lpop(Client, Key) -> erldis_client:sr_scall(Client, [<<"lpop">>, Key]).
 
 rpop(Client, Key) -> erldis_client:sr_scall(Client, [<<"rpop">>, Key]).
 
-% TODO: multibulk_cmd
-blpop(Client, Keys) -> erldis_client:bcall(Client, [<<"blpop">> | Keys], infinity).
+blpop(Client, Keys) -> blpop(Client, Keys, infinity).
+
 blpop(Client, Keys, Timeout) -> erldis_client:bcall(Client, [<<"blpop">> | Keys], Timeout).
 
-brpop(Client, Keys) -> erldis_client:bcall(Client, [<<"brpop">> | Keys], infinity).
+brpop(Client, Keys) -> brpop(Client, Keys, infinity).
+
 brpop(Client, Keys, Timeout) -> erldis_client:bcall(Client, [<<"brpop">> | Keys], Timeout).
+
+% TODO: rpoplpush
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Commands operating on sets %%
@@ -152,8 +159,7 @@ sinter(Client, Keys) -> erldis_client:scall(Client, [<<"sinter">> | Keys]).
 sinterstore(Client, DstKey, Keys) ->
 	numeric(erldis_client:sr_scall(Client, [<<"sinterstore">>, DstKey | Keys])).
 
-sunion(Client, Keys) ->
-	erldis_client:scall(Client, [<<"sunion">> | Keys]).
+sunion(Client, Keys) -> erldis_client:scall(Client, [<<"sunion">> | Keys]).
 
 sunionstore(Client, DstKey, Keys) ->
 	numeric(erldis_client:sr_scall(Client, [<<"sunionstore">>, DstKey | Keys])).
@@ -163,8 +169,9 @@ sdiff(Client, Keys) -> erldis_client:scall(Client, [<<"sdiff">> | Keys]).
 sdiffstore(Client, DstKey, Keys) ->
 	numeric(erldis_client:sr_scall(Client, [<<"sdiffstore">>, DstKey | Keys])).
 
-smembers(Client, Key) ->
-	erldis_client:scall(Client, [<<"smembers">>, Key]).
+smembers(Client, Key) -> erldis_client:scall(Client, [<<"smembers">>, Key]).
+
+%% TODO: srandmember
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Commands operating on ordered sets %%
@@ -178,6 +185,8 @@ zrem(Client, Key, Member) ->
 
 zincrby(Client, Key, By, Member) ->
 	numeric(erldis_client:sr_scall(Client, [<<"zincrby">>, Key, By, Member])).
+
+%% TODO: zrank, zrevrank
 
 zrange(Client, Key, Start, End) ->
 	erldis_client:scall(Client, [<<"zrange">>, Key, Start, End]).
@@ -206,16 +215,20 @@ zcard(Client, Key) ->
 zscore(Client, Key, Member) ->
 	numeric(erldis_client:sr_scall(Client, [<<"zscore">>, Key, Member])).
 
+%% TODO: zremrangebyrank
+
 zremrangebyscore(Client, Key, Min, Max) ->
 	Cmd = [<<"zremrangebyscore">>, Key, Min, Max],
 	numeric(erldis_client:sr_scall(Client, Cmd)).
+
+%% TODO: zunionstore, zinterstore
 
 %%%%%%%%%%%%%%%%%%%
 %% Hash commands %%
 %%%%%%%%%%%%%%%%%%%
 
 hset(Client, Key, Field, Value) ->
-	numeric(erldis_client:sr_scall(Client, [<<"hset">>, Key, Field, Value])).
+	erldis_client:sr_scall(Client, [<<"hset">>, Key, Field, Value]).
 
 hget(Client, Key, Field) ->
 	erldis_client:sr_scall(Client, [<<"hget">>, Key, Field]).
@@ -224,22 +237,21 @@ hmset(Client, Key, Fields) ->
 	erldis_client:sr_scall(Client, [<<"hmset">>, Key | Fields]).
 
 hincrby(Client, Key, Field, Incr) ->
-	erldis_client:sr_scall(Client, [<<"hincrby">>, Key, Field, Incr]).
-
-hdel(Client, Key, Field) ->
-	erldis_client:sr_scall(Client, [<<"hdel">>, Key, Field]).
-
-hlen(Client, Key) ->
-	numeric(erldis_client:sr_scall(Client, [<<"hlen">>, Key])).
+	numeric(erldis_client:sr_scall(Client, [<<"hincrby">>, Key, Field, Incr])).
 
 hexists(Client, Key, Field) ->
 	erldis_client:sr_scall(Client, [<<"hexists">>, Key, Field]).
 
-hkeys(Client, Key) ->
-	erldis_client:scall(Client, [<<"hkeys">>, Key]).
+hdel(Client, Key, Field) ->
+	erldis_client:sr_scall(Client, [<<"hdel">>, Key, Field]).
 
-hgetall(Client, Key) ->
-	erldis_client:scall(Client, [<<"hgetall">>, Key]).
+hlen(Client, Key) -> numeric(erldis_client:sr_scall(Client, [<<"hlen">>, Key])).
+
+hkeys(Client, Key) -> erldis_client:scall(Client, [<<"hkeys">>, Key]).
+
+%% TODO: hvals
+
+hgetall(Client, Key) -> erldis_client:scall(Client, [<<"hgetall">>, Key]).
 
 %%%%%%%%%%%%%
 %% Sorting %%
@@ -251,6 +263,26 @@ sort(Client, Key) -> erldis_client:scall(Client, [<<"sort">>, Key]).
 sort(Client, Key, Extra) when is_binary(Key), is_binary(Extra) ->
 	ExtraParts = re:split(Extra, <<" ">>),
 	erldis_client:scall(Client, [<<"sort">>, Key | ExtraParts]).
+
+%%%%%%%%%%%%%%%%%%
+%% Transactions %%
+%%%%%%%%%%%%%%%%%%
+
+get_all_results(Client) -> gen_server2:call(Client, get_all_results).
+
+set_pipelining(Client, Bool) -> gen_server2:cast(Client, {pipelining, Bool}).
+
+exec(Client, Fun) ->
+	case erldis_client:sr_scall(Client, <<"multi">>) of
+		ok ->
+			set_pipelining(Client, true),
+			Fun(Client),
+			get_all_results(Client),
+			set_pipelining(Client, false),
+			erldis_client:scall(Client, <<"exec">>);
+		_ ->
+			{error, unsupported}
+	end.
 	
 %%%%%%%%%%%%%
 %% PubSub  %%
@@ -308,6 +340,8 @@ lastsave(Client) -> erldis_client:scall(Client, <<"lastsave">>).
 
 shutdown(Client) -> erldis_client:scall(Client, <<"shutdown">>).
 
+%% TODO: bgrewriteaof
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Remote server control commands %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -327,37 +361,22 @@ info(Client) ->
 	Info = erldis_client:sr_scall(Client, <<"info">>),
 	lists:foldl(F, [], string:tokens(binary_to_list(Info), ?EOL)).
 
+%% TODO: monitor
+
 slaveof(Client, Host, Port) ->
 	erldis_client:scall(Client, [<<"slaveof">>, Host, Port]).
 
 slaveof(Client) ->
 	erldis_client:scall(Client, [<<"slaveof">>, <<"no one">>]).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Multi/Exec Pipelining %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-get_all_results(Client) -> gen_server2:call(Client, get_all_results).
-
-set_pipelining(Client, Bool) -> gen_server2:cast(Client, {pipelining, Bool}).
-
-exec(Client, Fun) ->
-	case erldis_client:sr_scall(Client, <<"multi">>) of
-		ok ->
-			set_pipelining(Client, true),
-			Fun(Client),
-			get_all_results(Client),
-			set_pipelining(Client, false),
-			erldis_client:scall(Client, <<"exec">>);
-		_ ->
-			{error, unsupported}
-	end.
+%% TODO: config
 
 %%%%%%%%%%%%%%%%%%%%%%
 %% reply conversion %%
 %%%%%%%%%%%%%%%%%%%%%%
 
-% TODO: eliminate bool->0|1 by changing erldis_proto:parse
+% NOTE: numeric conversion of booleans is a good thing because otherwise
+% we would lose boolean results when commands are pipelined
 
 numeric(false) ->
 	0;
@@ -376,7 +395,8 @@ numeric(I) when is_list(I) ->
 			catch error:badarg -> I
 			end
 	end;
-numeric(I) -> I.
+numeric(I) ->
+	I.
 
 withscores(L) -> 
 	withscores(L,[]).
