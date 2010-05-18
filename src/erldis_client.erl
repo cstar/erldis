@@ -17,7 +17,7 @@
 
 -export([sr_scall/2, scall/2, scall/3, call/2, call/3, bcall/3,
 		 set_call/4, send/3]).
--export([stop/1, transact/1, transact/2, select/2, info/1]).
+-export([stop/1, transact/1, transact/2, select/2]).
 -export([connect/0, connect/1, connect/2, connect/3, connect/4]).
 -export([start_link/0, start_link/1, start_link/2, start_link/3, start_link/4]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -61,12 +61,14 @@ sr_scall(Client, Args) ->
 % This is the simple send with a single row of commands
 scall(Client, Args) -> scall(Client, Args, ?default_timeout).
 
-scall(Client, Args, Timeout) -> send(Client, erldis:multibulk_cmd(Args), Timeout).
+scall(Client, Args, Timeout) ->
+	send(Client, erldis_proto:multibulk_cmd(Args), Timeout).
 
 % This is the complete send with multiple rows
 call(Client, Args) -> call(Client, Args, ?default_timeout).
 
-call(Client, Args, Timeout) -> send(Client, erldis:multibulk_cmd(Args), Timeout).
+call(Client, Args, Timeout) -> send(Client,
+	erldis_proto:multibulk_cmd(Args), Timeout).
 
 % Blocking call with server-side timeout added as final command arg
 bcall(Client, Args, Timeout) ->
@@ -132,42 +134,6 @@ transact(Client, F) when is_pid(Client) ->
 		error:Result -> stop(Client), {error, Result};
 		exit:Result -> stop(Client), exit(Result)
 	end.
-
-%%%%%%%%%%%%%%%%
-%% redis info %%
-%%%%%%%%%%%%%%%%
-
-info(Client) ->
-	F = fun(Stat) ->
-			case parse_stat(Stat) of
-				undefined -> false;
-				{Key, Val} -> {Key, Val}
-			end
-		end,
-
-	[S] = scall(Client, <<"info ">>),
-	elists:mapfilter(F, string:tokens(binary_to_list(S), ?EOL)).
-
-parse_stat("redis_version:"++Vsn) ->
-	{version, Vsn};
-parse_stat("uptime_in_seconds:"++Val) ->
-	{uptime, list_to_integer(Val)};
-parse_stat("connected_clients:"++Val) ->
-	{clients, list_to_integer(Val)};
-parse_stat("connected_slaves:"++Val) ->
-	{slaves, list_to_integer(Val)};
-parse_stat("used_memory:"++Val) ->
-	{memory, list_to_integer(Val)};
-parse_stat("changes_since_last_save:"++Val) ->
-	{changes, list_to_integer(Val)};
-parse_stat("last_save_time:"++Val) ->
-	{last_save, list_to_integer(Val)};
-parse_stat("total_connections_received:"++Val) ->
-	{connections, list_to_integer(Val)};
-parse_stat("total_commands_processed:"++Val) ->
-	{commands, list_to_integer(Val)};
-parse_stat(_) ->
-	undefined.
 
 %%%%%%%%%%%%%%%%%%%%
 %% connect & init %%
@@ -246,7 +212,7 @@ ensure_started(#redis{socket=undefined, db=DB}=State) ->
 					% send & recv here since don't have an active socket
 					% because we want synchronous result since this is called
 					% from handle_* functions
-					Cmd = erldis:multibulk_cmd([<<"select">>, DB]),
+					Cmd = erldis_proto:multibulk_cmd([<<"select">>, DB]),
 					gen_tcp:send(Socket, Cmd),
 					{ok, <<"+OK", ?EOL>>} = gen_tcp:recv(Socket, 0)
 			end,

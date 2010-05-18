@@ -183,13 +183,15 @@ zrange(Client, Key, Start, End) ->
 	erldis_client:scall(Client, [<<"zrange">>, Key, Start, End]).
 
 zrange_withscores(Client, Key, Start, End) ->
-	withscores(erldis_client:scall(Client, [<<"zrange">>, Key, Start, End, <<"withscores">>])).
+	Args = [<<"zrange">>, Key, Start, End, <<"withscores">>],
+	withscores(erldis_client:scall(Client, Args)).
 
 zrevrange(Client, Key, Start, End) ->
 	erldis_client:scall(Client, [<<"zrevrange">>, Key, Start, End]).
 
 zrevrange_withscores(Client, Key, Start, End) ->
-	withscores(erldis_client:scall(Client, [<<"zrevrange">>, Key, Start, End, <<"withscores">>])).
+	Args = [<<"zrevrange">>, Key, Start, End, <<"withscores">>],
+	withscores(erldis_client:scall(Client, Args)).
 
 zrangebyscore(Client, Key, Min, Max) ->
 	erldis_client:scall(Client, [<<"zrangebyscore">>, Key, Min, Max]).
@@ -255,28 +257,29 @@ sort(Client, Key, Extra) when is_binary(Key), is_binary(Extra) ->
 %%%%%%%%%%%%%
 
 publish(Client, Channel, Value) ->
-  numeric(
-	erldis_client:sr_scall(Client, [<<"publish">>, Channel, Value])).
-unsubscribe(Client)->
-  unsubscribe(Client, <<"">>).
-unsubscribe(Client, Channel) ->
-   U = <<"unsubscribe">>,
-   Cmd = case Channel of
-		   <<"">> -> [U];
-				_ -> [U, Channel]
-		 end,
-   case erldis_client:unsubscribe(Client, multibulk_cmd(Cmd), Channel) of 
-	  [<<"unsubscribe">>, FirstChan, N] ->
-		{FirstChan, numeric(N)};
-	 E ->
-		E
-	end.
+	numeric(erldis_client:sr_scall(Client, [<<"publish">>, Channel, Value])).
+
 subscribe(Client, Channel, Pid) ->
-   case erldis_client:subscribe(Client, multibulk_cmd([<<"subscribe">>, Channel]), Channel, Pid) of
-	 [<<"subscribe">>, Channel, N] ->
-	   numeric(N);
-	  _ ->
-		error
+	Cmd = erldis_proto:multibulk_cmd([<<"subscribe">>, Channel]),
+	
+	case erldis_client:subscribe(Client, Cmd, Channel, Pid) of
+		[<<"subscribe">>, Channel, N] -> numeric(N);
+		_ -> error
+	end.
+
+unsubscribe(Client)-> unsubscribe(Client, <<"">>).
+
+unsubscribe(Client, Channel) ->
+	case Channel of
+		<<"">> -> Args = [];
+		_ -> Args = [Channel]
+	end,
+	
+	Cmd = erldis_proto:multibulk_cmd([<<"unsubscribe">> | Args]),
+	
+	case erldis_client:unsubscribe(Client, Cmd, Channel) of 
+		[<<"unsubscribe">>, FirstChan, N] -> {FirstChan, numeric(N)};
+		E -> E
 	end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -312,7 +315,17 @@ shutdown(Client) -> erldis_client:scall(Client, <<"shutdown">>).
 auth(Client, Password) ->
 	erldis_client:scall(Client, [<<"auth">>, Password]).
 
-info(Client) -> erldis_client:scall(Client, <<"info">>).
+%% @doc Returns proplist of redis stats
+info(Client) ->
+	F = fun(Tok, Stats) ->
+			case erldis_proto:parse_stat(Tok) of
+				undefined -> Stats;
+				KV -> [KV | Stats]
+			end
+		end,
+	
+	Info = erldis_client:sr_scall(Client, <<"info">>),
+	lists:foldl(F, [], string:tokens(binary_to_list(Info), ?EOL)).
 
 slaveof(Client, Host, Port) ->
 	erldis_client:scall(Client, [<<"slaveof">>, Host, Port]).
@@ -340,24 +353,11 @@ exec(Client, Fun) ->
 			{error, unsupported}
 	end.
 
-%%%%%%%%%%%%%%%%%%%%%%%%
-%% command generators %%
-%%%%%%%%%%%%%%%%%%%%%%%%
-
--define(i2l(X), integer_to_list(X)).
-
-multibulk_cmd(Args) when is_binary(Args) ->
-	multibulk_cmd([Args]);
-multibulk_cmd(Args) when is_list(Args) ->
-	TotalLength = length(Args),
-	ArgCount = [<<"*">>, ?i2l(TotalLength), <<?EOL>>],
-	Bins = [erldis_binaries:to_binary(B) || B <- Args],
-	ArgBin = [[<<"$">>, ?i2l(iolist_size(A)), <<?EOL>>, A, <<?EOL>>] || A <- Bins],
-	[ArgCount, ArgBin].
-
 %%%%%%%%%%%%%%%%%%%%%%
 %% reply conversion %%
 %%%%%%%%%%%%%%%%%%%%%%
+
+% TODO: eliminate bool->0|1 by changing erldis_proto:parse
 
 numeric(false) ->
 	0;
