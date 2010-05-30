@@ -34,9 +34,9 @@ parse(empty, <<"+QUEUED">>) ->
 parse(empty, <<"+PONG">>) ->
 	pong;
 parse(empty, <<"-", Message/binary>>) ->
-	{error, Message};
-parse(empty, <<"$-1">>) ->
-	{read, nil};
+    {error, Message};
+parse(_, <<"$-1">>) ->
+    {read, nil};
 parse(empty, <<"*-1">>) ->
 	{hold, nil};
 parse(empty, <<"*0">>) ->

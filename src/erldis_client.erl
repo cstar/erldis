@@ -355,7 +355,7 @@ recv_value(Socket, NBytes) ->
 	
 	case gen_tcp:recv(Socket, NBytes+2) of
 		{ok, Packet} ->
-			%error_logger:error_report({line, Packet}),
+%		  error_logger:error_report({line, Packet, NBytes}),
 			inet:setopts(Socket, [{packet, line}]), % go back to line mode
 			trim2(Packet);
 		{error, Reason} ->
@@ -418,9 +418,20 @@ parse_state(State, Socket, Data) ->
 		{0, {hold, Remaining}} ->
 			% begin accumulation of multi bulk reply
 			State#redis{remaining=Remaining, pstate=read};
-		{_, {read, nil}} ->
+		{N, {read, nil}} ->
 			% reply with nil
-			send_reply(State#redis{buffer=[nil]});
+                        case State#redis.pstate of
+                          empty -> send_reply(State#redis{buffer=[nil]});
+                           read -> NewBuffer = [nil | State#redis.buffer],
+                                   NewState =
+                                   State#redis{remaining=N,
+                                               buffer=NewBuffer,
+                                               pstate=read},
+                                   case N of
+                                     0 -> send_reply(NewState);
+                                     _ -> NewState
+                                   end
+                        end;
 		{_, {read, 0}} ->
 			% reply with nil
 			send_reply(State#redis{buffer=[]});
