@@ -1,0 +1,443 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.6	//
+EOL	erldis_client.erl	/^-define(EOL, "\\r\\n").$/;"	d
+EOL	erldis_sync_client.erl	/^-define(EOL, "\\r\\n").$/;"	d
+abcast	gen_server2.erl	/^abcast(Name, Request) when is_atom(Name) ->$/;"	f	module:gen_server2
+abcast	gen_server2.erl	/^abcast(Nodes, Name, Request) when is_list(Nodes), is_atom(Name) ->$/;"	f	module:gen_server2
+add_element	erldis_sets.erl	/^add_element(Elem, Client, Key) -> erldis:sadd(Client, Key, Elem).$/;"	f	module:erldis_sets
+app_get_env	erldis_client.erl	/^app_get_env(AppName, Varname, Default) ->$/;"	f	module:erldis_client
+app_get_env	erldis_sync_client.erl	/^app_get_env(AppName, Varname, Default) ->$/;"	f	module:erldis_sync_client
+append	erldis_dict.erl	/^append(Key, Value, Client) -> erldis:rpush(Client, Key, Value).$/;"	f	module:erldis_dict
+append_list	erldis_dict.erl	/^append_list(Key, Values, Client) ->$/;"	f	module:erldis_dict
+auth	erldis.erl	/^auth(Client, Password) ->$/;"	f	module:erldis
+bcall	erldis_client.erl	/^bcall(Client, Args, Timeout) ->$/;"	f	module:erldis_client
+behaviour_info	gen_server2.erl	/^behaviour_info(_Other) ->$/;"	f	module:gen_server2
+behaviour_info	gen_server2.erl	/^behaviour_info(callbacks) ->$/;"	f	module:gen_server2
+bgsave	erldis.erl	/^bgsave(Client) -> erldis_client:scall(Client, <<"bgsave">>).$/;"	f	module:erldis
+blpop	erldis.erl	/^blpop(Client, Keys) -> erldis_client:bcall(Client, [<<"blpop">> | Keys], infinity).$/;"	f	module:erldis
+blpop	erldis.erl	/^blpop(Client, Keys, Timeout) -> erldis_client:bcall(Client, [<<"blpop">> | Keys], Timeout).$/;"	f	module:erldis
+brpop	erldis.erl	/^brpop(Client, Keys) -> erldis_client:bcall(Client, [<<"brpop">> | Keys], infinity).$/;"	f	module:erldis
+brpop	erldis.erl	/^brpop(Client, Keys, Timeout) -> erldis_client:bcall(Client, [<<"brpop">> | Keys], Timeout).$/;"	f	module:erldis
+call	erldis_client.erl	/^call(Client, Args) -> call(Client, Args, ?default_timeout).$/;"	f	module:erldis_client
+call	erldis_client.erl	/^call(Client, Args, Timeout) ->$/;"	f	module:erldis_client
+call	erldis_sync_client.erl	/^call(Client, Cmd) -> call(Client, Cmd, []).$/;"	f	module:erldis_sync_client
+call	erldis_sync_client.erl	/^call(Client, Cmd, Args) ->$/;"	f	module:erldis_sync_client
+call	gen_server2.erl	/^call(Name, Request) ->$/;"	f	module:gen_server2
+call	gen_server2.erl	/^call(Name, Request, Timeout) ->$/;"	f	module:gen_server2
+cast	gen_server2.erl	/^cast(Dest, Request) when is_atom(Dest) ->$/;"	f	module:gen_server2
+cast	gen_server2.erl	/^cast(Dest, Request) when is_pid(Dest) ->$/;"	f	module:gen_server2
+cast	gen_server2.erl	/^cast({Name,Node}=Dest, Request) when is_atom(Name), is_atom(Node) -> $/;"	f	module:gen_server2
+cast	gen_server2.erl	/^cast({global,Name}, Request) ->$/;"	f	module:gen_server2
+cast_msg	gen_server2.erl	/^cast_msg(Request) -> {'$gen_cast',Request}.$/;"	f	module:gen_server2
+client	erldis_sup.erl	/^client() ->$/;"	f	module:erldis_sup
+code_change	erldis_client.erl	/^code_change(_OldVsn, State, _Extra) -> {ok, State}.$/;"	f	module:erldis_client
+code_change	erldis_sync_client.erl	/^code_change(_OldVsn, State, _Extra) -> {ok, State}./;"	f	module:erldis_sync_client
+connect	erldis.erl	/^connect() -> erldis_client:connect().$/;"	f	module:erldis
+connect	erldis.erl	/^connect(Host) -> erldis_client:connect(Host).$/;"	f	module:erldis
+connect	erldis.erl	/^connect(Host, Port) -> erldis_client:connect(Host, Port).$/;"	f	module:erldis
+connect	erldis.erl	/^connect(Host, Port, Options) -> erldis_client:connect(Host, Port, Options).$/;"	f	module:erldis
+connect	erldis_client.erl	/^connect() -> start(false).$/;"	f	module:erldis_client
+connect	erldis_client.erl	/^connect(DB) when is_integer(DB) -> start(DB, false).$/;"	f	module:erldis_client
+connect	erldis_client.erl	/^connect(Host) when is_list(Host) -> start(Host, false);$/;"	f	module:erldis_client
+connect	erldis_client.erl	/^connect(Host, Port) -> start(Host, Port, false).$/;"	f	module:erldis_client
+connect	erldis_client.erl	/^connect(Host, Port, Options) -> start(Host, Port, Options, false).$/;"	f	module:erldis_client
+connect	erldis_client.erl	/^connect(Host, Port, Options, DB) -> start(Host, Port, Options, DB, false).$/;"	f	module:erldis_client
+connect	erldis_sync_client.erl	/^connect() ->$/;"	f	module:erldis_sync_client
+connect	erldis_sync_client.erl	/^connect(DB) when is_integer(DB) ->$/;"	f	module:erldis_sync_client
+connect	erldis_sync_client.erl	/^connect(Host) when is_list(Host) ->$/;"	f	module:erldis_sync_client
+connect	erldis_sync_client.erl	/^connect(Host, Port) ->$/;"	f	module:erldis_sync_client
+connect	erldis_sync_client.erl	/^connect(Host, Port, Options) ->$/;"	f	module:erldis_sync_client
+connect	erldis_sync_client.erl	/^connect(Host, Port, Options, DB) ->$/;"	f	module:erldis_sync_client
+connect_socket	erldis_client.erl	/^connect_socket(#redis{socket=undefined, host=Host, port=Port, timeout=Timeout}=State, Active) ->$/;"	f	module:erldis_client
+connect_socket	erldis_client.erl	/^connect_socket(State, _) ->$/;"	f	module:erldis_client
+convert	erldis_proto.erl	/^convert(<<"+", Message\/binary>>) ->$/;"	f	module:erldis_proto
+convert	erldis_proto.erl	/^convert(<<":", Integer\/binary>>) ->$/;"	f	module:erldis_proto
+convert	erldis_proto.erl	/^convert(Message) ->$/;"	f	module:erldis_proto
+dbg_options	gen_server2.erl	/^dbg_options(Name, Opts) ->$/;"	f	module:gen_server2
+dbg_options	gen_server2.erl	/^dbg_options(Name, []) ->$/;"	f	module:gen_server2
+dbg_opts	gen_server2.erl	/^dbg_opts(Name, Opts) ->$/;"	f	module:gen_server2
+dbsize	erldis.erl	/^dbsize(Client) -> numeric(erldis_client:sr_scall(Client, [<<"dbsize">>])).$/;"	f	module:erldis
+debug_options	gen_server2.erl	/^debug_options(Name, Opts) ->$/;"	f	module:gen_server2
+decr	erldis.erl	/^decr(Client, Key) ->$/;"	f	module:erldis
+decrby	erldis.erl	/^decrby(Client, Key, By) ->$/;"	f	module:erldis
+default_timeout	erldis_client.erl	/^-define(default_timeout, 5000). %% same as in gen.erl in stdlib$/;"	d
+del	erldis.erl	/^del(Client, Key) -> erldis_client:sr_scall(Client, [<<"del">>, Key]).$/;"	f	module:erldis
+del_element	erldis_sets.erl	/^del_element(Elem, Client, Key) -> erldis:srem(Client, Key, Elem).$/;"	f	module:erldis_sets
+delete	erldis_list.erl	/^delete(Elem, Key, Client) -> erldis:lrem(Client, Key, 1, Elem).$/;"	f	module:erldis_list
+delete	erldis_sets.erl	/^delete(Client) -> erldis_client:stop(Client).$/;"	f	module:erldis_sets
+dispatch	gen_server2.erl	/^dispatch(Info, Mod, State) ->$/;"	f	module:gen_server2
+dispatch	gen_server2.erl	/^dispatch({'$gen_cast', Msg}, Mod, State) ->$/;"	f	module:gen_server2
+do_abcast	gen_server2.erl	/^do_abcast([Node|Nodes], Name, Msg) when is_atom(Node) ->$/;"	f	module:gen_server2
+do_abcast	gen_server2.erl	/^do_abcast([], _,_) -> abcast.$/;"	f	module:gen_server2
+do_cast	gen_server2.erl	/^do_cast(Dest, Request) -> $/;"	f	module:gen_server2
+do_multi_call	gen_server2.erl	/^do_multi_call(Nodes, Name, Req, Timeout) ->$/;"	f	module:gen_server2
+do_multi_call	gen_server2.erl	/^do_multi_call(Nodes, Name, Req, infinity) ->$/;"	f	module:gen_server2
+do_send	gen_server2.erl	/^do_send(Dest, Msg) ->$/;"	f	module:gen_server2
+dont_reset_remaining	erldis_client.erl	/^dont_reset_remaining(State, Queue) ->$/;"	f	module:erldis_client
+dont_reset_remaining	erldis_client.erl	/^dont_reset_remaining(State, Queue, DB) ->$/;"	f	module:erldis_client
+drop	erldis_list.erl	/^drop(Key, Client) -> out(Key, Client).$/;"	f	module:erldis_list
+drop_r	erldis_list.erl	/^drop_r(Key, Client) -> out_r(Key, Client).$/;"	f	module:erldis_list
+ensure_started	erldis_client.erl	/^ensure_started(#redis{socket=undefined, db=DB}=State) ->$/;"	f	module:erldis_client
+ensure_started	erldis_client.erl	/^ensure_started(State)->$/;"	f	module:erldis_client
+ensure_started	erldis_sync_client.erl	/^ensure_started(#redis{socket=undefined, host=Host, port=Port, timeout=Timeout}=State)->$/;"	f	module:erldis_sync_client
+ensure_started	erldis_sync_client.erl	/^ensure_started(State)->$/;"	f	module:erldis_sync_client
+enter_loop	gen_server2.erl	/^enter_loop(Mod, Options, State) ->$/;"	f	module:gen_server2
+enter_loop	gen_server2.erl	/^enter_loop(Mod, Options, State, ServerName = {_, _}) ->$/;"	f	module:gen_server2
+enter_loop	gen_server2.erl	/^enter_loop(Mod, Options, State, ServerName, Timeout) ->$/;"	f	module:gen_server2
+enter_loop	gen_server2.erl	/^enter_loop(Mod, Options, State, Timeout) ->$/;"	f	module:gen_server2
+erase	erldis_dict.erl	/^erase(Key, Client) -> erldis:del(Client, Key).$/;"	f	module:erldis_dict
+erlang_timeout	erldis_client.erl	/^erlang_timeout(V) when is_number(V) -> V + ?default_timeout.$/;"	f	module:erldis_client
+erlang_timeout	erldis_client.erl	/^erlang_timeout(infinity) -> infinity;$/;"	f	module:erldis_client
+erldis	erldis.erl	/^-module(erldis).$/;"	m
+erldis_app	erldis_app.erl	/^-module(erldis_app).$/;"	m
+erldis_binaries	erldis_binaries.erl	/^-module(erldis_binaries).$/;"	m
+erldis_client	erldis_client.erl	/^-module(erldis_client).$/;"	m
+erldis_dict	erldis_dict.erl	/^-module(erldis_dict).$/;"	m
+erldis_list	erldis_list.erl	/^-module(erldis_list).$/;"	m
+erldis_proto	erldis_proto.erl	/^-module(erldis_proto).$/;"	m
+erldis_sets	erldis_sets.erl	/^-module(erldis_sets).$/;"	m
+erldis_sup	erldis_sup.erl	/^-module(erldis_sup).$/;"	m
+erldis_sync_client	erldis_sync_client.erl	/^-module(erldis_sync_client).$/;"	m
+error_info	gen_server2.erl	/^error_info(Reason, Name, Msg, State, Debug) ->$/;"	f	module:gen_server2
+error_info	gen_server2.erl	/^error_info(_Reason, application_controller, _Msg, _State, _Debug) ->$/;"	f	module:gen_server2
+exec	erldis.erl	/^exec(Client, Fun) ->$/;"	f	module:erldis
+exists	erldis.erl	/^exists(Client, Key) -> erldis_client:sr_scall(Client, [<<"exists">>, Key]).$/;"	f	module:erldis
+expire	erldis.erl	/^expire(Client, Key, Seconds) ->$/;"	f	module:erldis
+fetch	erldis_dict.erl	/^fetch(Key, Client) ->$/;"	f	module:erldis_dict
+fetch_keys	erldis_dict.erl	/^fetch_keys(Pattern, Client) -> erldis:keys(Client, Pattern).$/;"	f	module:erldis_dict
+filter	erldis_sets.erl	/^filter(Pred, Client, Key) -> lists:filter(Pred, to_list(Client, Key)).$/;"	f	module:erldis_sets
+find	erldis_dict.erl	/^find(Key, Client) ->$/;"	f	module:erldis_dict
+flushall	erldis.erl	/^flushall(Client) -> erldis_client:sr_scall(Client, <<"flushall">>).$/;"	f	module:erldis
+flushdb	erldis.erl	/^flushdb(Client) -> erldis_client:sr_scall(Client, <<"flushdb">>).$/;"	f	module:erldis
+fold	erldis_sets.erl	/^fold(F, Acc0, Client, Key) -> lists:foldl(F, Acc0, to_list(Client, Key)).$/;"	f	module:erldis_sets
+foldl	erldis_list.erl	/^foldl(F, Acc0, Key, Client) -> foldl(0, F, Acc0, Key, Client).$/;"	f	module:erldis_list
+foldl	erldis_list.erl	/^foldl(I, F, Acc0, Key, Client) ->$/;"	f	module:erldis_list
+foldr	erldis_list.erl	/^foldr(F, Acc0, Key, Client) -> foldr(len(Key, Client) - 1, F, Acc0, Key, Client).$/;"	f	module:erldis_list
+foldr	erldis_list.erl	/^foldr(I, F, Acc0, Key, Client) ->$/;"	f	module:erldis_list
+foldr	erldis_list.erl	/^foldr(I, _, Acc0, _, _) when I < 0 ->$/;"	f	module:erldis_list
+foreach	erldis_list.erl	/^foreach(F, Key, Client) -> foreach(0, F, Key, Client).$/;"	f	module:erldis_list
+foreach	erldis_list.erl	/^foreach(I, F, Key, Client) ->$/;"	f	module:erldis_list
+format	erldis_sync_client.erl	/^format(Lines) ->$/;"	f	module:erldis_sync_client
+format	erldis_sync_client.erl	/^format([Line|Rest], Result) ->$/;"	f	module:erldis_sync_client
+format	erldis_sync_client.erl	/^format([], Result) ->$/;"	f	module:erldis_sync_client
+format_status	gen_server2.erl	/^format_status(Opt, StatusData) ->$/;"	f	module:gen_server2
+from_list	erldis_list.erl	/^from_list(L, Key, Client) ->$/;"	f	module:erldis_list
+from_list	erldis_sets.erl	/^from_list(Client, Key, List) ->$/;"	f	module:erldis_sets
+gen_server2	gen_server2.erl	/^-module(gen_server2).$/;"	m
+get	erldis.erl	/^get(Client, Key) -> erldis_client:sr_scall(Client, [<<"get">>, Key]).$/;"	f	module:erldis
+get	erldis_list.erl	/^get(I, Key, Client) -> erldis:lindex(Client, Key, I).$/;"	f	module:erldis_list
+get	erldis_list.erl	/^get(Key, Client) ->$/;"	f	module:erldis_list
+get_all_results	erldis.erl	/^get_all_results(Client) -> gen_server2:call(Client, get_all_results).$/;"	f	module:erldis
+get_parent	gen_server2.erl	/^get_parent() ->$/;"	f	module:gen_server2
+get_proc_name	gen_server2.erl	/^get_proc_name(Pid) when is_pid(Pid) ->$/;"	f	module:gen_server2
+get_proc_name	gen_server2.erl	/^get_proc_name({global, Name}) ->$/;"	f	module:gen_server2
+get_proc_name	gen_server2.erl	/^get_proc_name({local, Name}) ->$/;"	f	module:gen_server2
+get_r	erldis_list.erl	/^get_r(Key, Client) ->$/;"	f	module:erldis_list
+getset	erldis.erl	/^getset(Client, Key, Value) ->$/;"	f	module:erldis
+handle_call	erldis_client.erl	/^handle_call(_, _, State) ->$/;"	f	module:erldis_client
+handle_call	erldis_client.erl	/^handle_call(disconnect, _, State) ->$/;"	f	module:erldis_client
+handle_call	erldis_client.erl	/^handle_call(get_all_results, From, #redis{pipeline=true, calls=Calls} = State) ->$/;"	f	module:erldis_client
+handle_call	erldis_client.erl	/^handle_call(is_pipelined, _From, State)->$/;"	f	module:erldis_client
+handle_call	erldis_client.erl	/^handle_call({send, Cmd}, From, State1) ->$/;"	f	module:erldis_client
+handle_call	erldis_client.erl	/^handle_call({subscribe, Cmd, Class, Pid}, From, State1)->$/;"	f	module:erldis_client
+handle_call	erldis_client.erl	/^handle_call({unsubscribe, Cmd, Class}, From, State1)->$/;"	f	module:erldis_client
+handle_call	erldis_sync_client.erl	/^handle_call(_, _, State) ->$/;"	f	module:erldis_sync_client
+handle_call	erldis_sync_client.erl	/^handle_call(disconnect, _, State) ->$/;"	f	module:erldis_sync_client
+handle_call	erldis_sync_client.erl	/^handle_call({send, Cmd}, From, State1) ->$/;"	f	module:erldis_sync_client
+handle_cast	erldis_client.erl	/^handle_cast(_, State) ->$/;"	f	module:erldis_client
+handle_cast	erldis_client.erl	/^handle_cast(disconnect, State) ->$/;"	f	module:erldis_client
+handle_cast	erldis_client.erl	/^handle_cast({pipelining, Bool}, State) ->$/;"	f	module:erldis_client
+handle_cast	erldis_client.erl	/^handle_cast({send, Cmd}, #redis{remaining=Remaining, calls=Calls} = State1) ->$/;"	f	module:erldis_client
+handle_cast	erldis_sync_client.erl	/^handle_cast(_, State) ->$/;"	f	module:erldis_sync_client
+handle_cast	erldis_sync_client.erl	/^handle_cast(disconnect, State) ->$/;"	f	module:erldis_sync_client
+handle_common_reply	gen_server2.erl	/^handle_common_reply(Reply, Parent, Name, Msg, Mod, State, Queue) ->$/;"	f	module:gen_server2
+handle_common_reply	gen_server2.erl	/^handle_common_reply(Reply, Parent, Name, Msg, Mod, State, Queue, Debug) ->$/;"	f	module:gen_server2
+handle_info	erldis_client.erl	/^handle_info(_Info, State) ->$/;"	f	module:erldis_client
+handle_info	erldis_client.erl	/^handle_info({tcp, Socket, Data}, State) ->$/;"	f	module:erldis_client
+handle_info	erldis_client.erl	/^handle_info({tcp_closed, Socket}, State=#redis{socket=Socket}) ->$/;"	f	module:erldis_client
+handle_info	erldis_sync_client.erl	/^handle_info(_Info, State) ->$/;"	f	module:erldis_sync_client
+handle_info	erldis_sync_client.erl	/^handle_info({tcp, Socket, Data}, State) ->$/;"	f	module:erldis_sync_client
+handle_info	erldis_sync_client.erl	/^handle_info({tcp_closed, Socket}, State=#redis{socket=Socket}) ->$/;"	f	module:erldis_sync_client
+handle_msg	gen_server2.erl	/^handle_msg(Msg,$/;"	f	module:gen_server2
+handle_msg	gen_server2.erl	/^handle_msg({'$gen_call', From, Msg},$/;"	f	module:gen_server2
+hdel	erldis.erl	/^hdel(Client, Key, Field) ->$/;"	f	module:erldis
+hexists	erldis.erl	/^hexists(Client, Key, Field) ->$/;"	f	module:erldis
+hget	erldis.erl	/^hget(Client, Key, Field) ->$/;"	f	module:erldis
+hgetall	erldis.erl	/^hgetall(Client, Key) ->$/;"	f	module:erldis
+hincrby	erldis.erl	/^hincrby(Client, Key, Field, Incr) ->$/;"	f	module:erldis
+hkeys	erldis.erl	/^hkeys(Client, Key) ->$/;"	f	module:erldis
+hlen	erldis.erl	/^hlen(Client, Key) ->$/;"	f	module:erldis
+hmset	erldis.erl	/^hmset(Client, Key, Fields) ->$/;"	f	module:erldis
+hset	erldis.erl	/^hset(Client, Key, Field, Value) ->$/;"	f	module:erldis
+i2l	erldis.erl	/^-define(i2l(X), integer_to_list(X)).$/;"	d
+in	erldis_list.erl	/^in(Item, Key, Client) ->$/;"	f	module:erldis_list
+in_r	erldis_list.erl	/^in_r(Item, Key, Client) ->$/;"	f	module:erldis_list
+incr	erldis.erl	/^incr(Client, Key) ->$/;"	f	module:erldis
+incrby	erldis.erl	/^incrby(Client, Key, By) ->$/;"	f	module:erldis
+info	erldis.erl	/^info(Client) -> erldis_client:scall(Client, <<"info">>).$/;"	f	module:erldis
+info	erldis_client.erl	/^info(Client) ->$/;"	f	module:erldis_client
+info	erldis_sync_client.erl	/^info(Client) ->$/;"	f	module:erldis_sync_client
+init	erldis_client.erl	/^init([Host, Port]) ->$/;"	f	module:erldis_client
+init	erldis_sup.erl	/^init(_Args) ->$/;"	f	module:erldis_sup
+init	erldis_sync_client.erl	/^init([Host, Port]) ->$/;"	f	module:erldis_sync_client
+init_it	gen_server2.erl	/^init_it(Starter, Parent, Name, Mod, Args, Options) ->$/;"	f	module:gen_server2
+init_it	gen_server2.erl	/^init_it(Starter, self, Name, Mod, Args, Options) ->$/;"	f	module:gen_server2
+intersection	erldis_sets.erl	/^intersection(Client, Key1, Key2) -> intersection(Client, [Key1, Key2]).$/;"	f	module:erldis_sets
+intersection	erldis_sets.erl	/^intersection(Client, Keys) -> erldis:sintersect(Client, Keys).$/;"	f	module:erldis_sets
+is_array	erldis_list.erl	/^is_array(Key, Client) -> is_list(Key, Client).$/;"	f	module:erldis_list
+is_disjoint	erldis_sets.erl	/^is_disjoint(Client, Key1, Key2) -> [] == intersection(Client, [Key1, Key2]).$/;"	f	module:erldis_sets
+is_element	erldis_sets.erl	/^is_element(Elem, Client, Key) -> erldis:sismember(Client, Key, Elem).$/;"	f	module:erldis_sets
+is_empty	erldis_list.erl	/^is_empty(Key, Client) -> len(Key, Client) == 0.$/;"	f	module:erldis_list
+is_key	erldis_dict.erl	/^is_key(Key, Client) -> erldis:exists(Client, Key).$/;"	f	module:erldis_dict
+is_list	erldis_list.erl	/^is_list(Key, Client) -> <<"list">> == erldis:type(Client, Key).$/;"	f	module:erldis_list
+is_queue	erldis_list.erl	/^is_queue(Key, Client) -> is_list(Key, Client).$/;"	f	module:erldis_list
+is_set	erldis_sets.erl	/^is_set(Client, Key) -> <<"set">> == erldis:type(Client, Key).$/;"	f	module:erldis_sets
+is_subset	erldis_sets.erl	/^is_subset(Client, Key1, Key2) -> [] == subtract(Client, [Key2, Key1]).$/;"	f	module:erldis_sets
+join	erldis_binaries.erl	/^join(Array, Sep)->$/;"	f	module:erldis_binaries
+join	erldis_binaries.erl	/^join([], _)->$/;"	f	module:erldis_binaries
+keys	erldis.erl	/^keys(Client, Pattern) ->$/;"	f	module:erldis
+last	erldis_list.erl	/^last(Key, Client) -> get_r(Key, Client).$/;"	f	module:erldis_list
+lastsave	erldis.erl	/^lastsave(Client) -> erldis_client:scall(Client, <<"lastsave">>).$/;"	f	module:erldis
+len	erldis_list.erl	/^len(Key, Client) -> erldis:llen(Client, Key).$/;"	f	module:erldis_list
+lindex	erldis.erl	/^lindex(Client, Key, Index) ->$/;"	f	module:erldis
+llen	erldis.erl	/^llen(Client, Key) ->$/;"	f	module:erldis
+loop	gen_server2.erl	/^loop(Parent, Name, State, Mod, Time, Queue, Debug) ->$/;"	f	module:gen_server2
+lpop	erldis.erl	/^lpop(Client, Key) -> erldis_client:sr_scall(Client, [<<"lpop">>, Key]).$/;"	f	module:erldis
+lpush	erldis.erl	/^lpush(Client, Key, Value) ->$/;"	f	module:erldis
+lrange	erldis.erl	/^lrange(Client, Key, Start, End) ->$/;"	f	module:erldis
+lrem	erldis.erl	/^lrem(Client, Key, Number, Value) ->$/;"	f	module:erldis
+lset	erldis.erl	/^lset(Client, Key, Index, Value) ->$/;"	f	module:erldis
+ltrim	erldis.erl	/^ltrim(Client, Key, Start, End) ->$/;"	f	module:erldis
+merge	erldis_list.erl	/^merge(F, L, Key, Client) -> merge(0, F, L, Key, Client).$/;"	f	module:erldis_list
+merge	erldis_list.erl	/^merge(I, F, A, [B | L], Key, Client) ->$/;"	f	module:erldis_list
+merge	erldis_list.erl	/^merge(I, F, L, Key, Client) ->$/;"	f	module:erldis_list
+merge	erldis_list.erl	/^merge(_, _, [], _, _) ->$/;"	f	module:erldis_list
+mget	erldis.erl	/^mget(Client, Keys) -> erldis_client:scall(Client, [<<"mget">> | Keys]).$/;"	f	module:erldis
+move	erldis.erl	/^move(Client, Key, DBIndex) ->$/;"	f	module:erldis
+multi_call	gen_server2.erl	/^multi_call(Name, Req)$/;"	f	module:gen_server2
+multi_call	gen_server2.erl	/^multi_call(Nodes, Name, Req) $/;"	f	module:gen_server2
+multi_call	gen_server2.erl	/^multi_call(Nodes, Name, Req, Timeout) $/;"	f	module:gen_server2
+multi_call	gen_server2.erl	/^multi_call(Nodes, Name, Req, infinity) ->$/;"	f	module:gen_server2
+multibulk_cmd	erldis.erl	/^multibulk_cmd(Args) when is_atom(Args) ->$/;"	f	module:erldis
+multibulk_cmd	erldis.erl	/^multibulk_cmd(Args) when is_binary(Args) ->$/;"	f	module:erldis
+multibulk_cmd	erldis.erl	/^multibulk_cmd(Args) when is_list(Args) ->$/;"	f	module:erldis
+name_to_pid	gen_server2.erl	/^name_to_pid(Name) ->$/;"	f	module:gen_server2
+nth	erldis_list.erl	/^nth(N, Key, Client) -> get(N, Key, Client).$/;"	f	module:erldis_list
+numeric	erldis.erl	/^numeric(I) -> I.$/;"	f	module:erldis
+numeric	erldis.erl	/^numeric(I) when is_binary(I) -> numeric(binary_to_list(I));$/;"	f	module:erldis
+numeric	erldis.erl	/^numeric(I) when is_list(I) ->$/;"	f	module:erldis
+numeric	erldis.erl	/^numeric(false) -> 0;$/;"	f	module:erldis
+numeric	erldis.erl	/^numeric(nil) -> 0;$/;"	f	module:erldis
+numeric	erldis.erl	/^numeric(true) -> 1;$/;"	f	module:erldis
+opt	gen_server2.erl	/^opt(Op, [_|Options]) ->$/;"	f	module:gen_server2
+opt	gen_server2.erl	/^opt(Op, [{Op, Value}|_]) ->$/;"	f	module:gen_server2
+opt	gen_server2.erl	/^opt(_, []) ->$/;"	f	module:gen_server2
+out	erldis_list.erl	/^out(Key, Client) ->$/;"	f	module:erldis_list
+out_foreach	erldis_list.erl	/^out_foreach(F, Key, Client) ->$/;"	f	module:erldis_list
+out_r	erldis_list.erl	/^out_r(Key, Client) ->$/;"	f	module:erldis_list
+parse	erldis_proto.erl	/^parse(_, <<"$", BulkSize\/binary>>) ->$/;"	f	module:erldis_proto
+parse	erldis_proto.erl	/^parse(empty, <<"$-1">>) ->$/;"	f	module:erldis_proto
+parse	erldis_proto.erl	/^parse(empty, <<"*", MultiBulkSize\/binary>>) ->$/;"	f	module:erldis_proto
+parse	erldis_proto.erl	/^parse(empty, <<"*-1">>) ->$/;"	f	module:erldis_proto
+parse	erldis_proto.erl	/^parse(empty, <<"*0">>) ->$/;"	f	module:erldis_proto
+parse	erldis_proto.erl	/^parse(empty, <<"-", Message\/binary>>) ->$/;"	f	module:erldis_proto
+parse	erldis_proto.erl	/^parse(empty, Message) ->$/;"	f	module:erldis_proto
+parse	erldis_proto.erl	/^parse(read, Message)->$/;"	f	module:erldis_proto
+parse_stat	erldis_client.erl	/^parse_stat("changes_since_last_save:"++Val) ->$/;"	f	module:erldis_client
+parse_stat	erldis_client.erl	/^parse_stat("connected_clients:"++Val) ->$/;"	f	module:erldis_client
+parse_stat	erldis_client.erl	/^parse_stat("connected_slaves:"++Val) ->$/;"	f	module:erldis_client
+parse_stat	erldis_client.erl	/^parse_stat("last_save_time:"++Val) ->$/;"	f	module:erldis_client
+parse_stat	erldis_client.erl	/^parse_stat("redis_version:"++Vsn) ->$/;"	f	module:erldis_client
+parse_stat	erldis_client.erl	/^parse_stat("total_commands_processed:"++Val) ->$/;"	f	module:erldis_client
+parse_stat	erldis_client.erl	/^parse_stat("total_connections_received:"++Val) ->$/;"	f	module:erldis_client
+parse_stat	erldis_client.erl	/^parse_stat("uptime_in_seconds:"++Val) ->$/;"	f	module:erldis_client
+parse_stat	erldis_client.erl	/^parse_stat("used_memory:"++Val) ->$/;"	f	module:erldis_client
+parse_stat	erldis_client.erl	/^parse_stat(_) ->$/;"	f	module:erldis_client
+parse_stat	erldis_sync_client.erl	/^parse_stat("changes_since_last_save:"++Val) ->$/;"	f	module:erldis_sync_client
+parse_stat	erldis_sync_client.erl	/^parse_stat("connected_clients:"++Val) ->$/;"	f	module:erldis_sync_client
+parse_stat	erldis_sync_client.erl	/^parse_stat("connected_slaves:"++Val) ->$/;"	f	module:erldis_sync_client
+parse_stat	erldis_sync_client.erl	/^parse_stat("last_save_time:"++Val) ->$/;"	f	module:erldis_sync_client
+parse_stat	erldis_sync_client.erl	/^parse_stat("redis_version:"++Vsn) ->$/;"	f	module:erldis_sync_client
+parse_stat	erldis_sync_client.erl	/^parse_stat("total_commands_processed:"++Val) ->$/;"	f	module:erldis_sync_client
+parse_stat	erldis_sync_client.erl	/^parse_stat("total_connections_received:"++Val) ->$/;"	f	module:erldis_sync_client
+parse_stat	erldis_sync_client.erl	/^parse_stat("uptime_in_seconds:"++Val) ->$/;"	f	module:erldis_sync_client
+parse_stat	erldis_sync_client.erl	/^parse_stat("used_memory:"++Val) ->$/;"	f	module:erldis_sync_client
+parse_stat	erldis_sync_client.erl	/^parse_stat(_) ->$/;"	f	module:erldis_sync_client
+parse_state	erldis_client.erl	/^parse_state(State, Socket, Data) ->$/;"	f	module:erldis_client
+parse_state	erldis_sync_client.erl	/^parse_state(State, Socket, Data) ->$/;"	f	module:erldis_sync_client
+peek	erldis_list.erl	/^peek(Key, Client) ->$/;"	f	module:erldis_list
+peek_r	erldis_list.erl	/^peek_r(Key, Client) ->$/;"	f	module:erldis_list
+print_event	gen_server2.erl	/^print_event(Dev, Event, Name) ->$/;"	f	module:gen_server2
+print_event	gen_server2.erl	/^print_event(Dev, {in, Msg}, Name) ->$/;"	f	module:gen_server2
+print_event	gen_server2.erl	/^print_event(Dev, {noreply, State}, Name) ->$/;"	f	module:gen_server2
+print_event	gen_server2.erl	/^print_event(Dev, {out, Msg, To, State}, Name) ->$/;"	f	module:gen_server2
+process_msg	gen_server2.erl	/^process_msg(Parent, Name, State, Mod, Time, Queue, Debug, Msg) ->$/;"	f	module:gen_server2
+publish	erldis.erl	/^publish(Client, Channel, Value) ->$/;"	f	module:erldis
+quit	erldis.erl	/^quit(Client) -> erldis_client:stop(Client).$/;"	f	module:erldis
+randomkey	erldis.erl	/^randomkey(Client, Key) ->$/;"	f	module:erldis
+rec_nodes	gen_server2.erl	/^rec_nodes(Tag, Nodes, Name, TimerId) -> $/;"	f	module:gen_server2
+rec_nodes	gen_server2.erl	/^rec_nodes(Tag, [N|Tail], Name, Badnodes, Replies, Time, TimerId) ->$/;"	f	module:gen_server2
+rec_nodes	gen_server2.erl	/^rec_nodes(Tag, [{N,R}|Tail], Name, Badnodes, Replies, Time, TimerId ) ->$/;"	f	module:gen_server2
+rec_nodes	gen_server2.erl	/^rec_nodes(_, [], _, Badnodes, Replies, _, TimerId) ->$/;"	f	module:gen_server2
+rec_nodes_rest	gen_server2.erl	/^rec_nodes_rest(Tag, [N|Tail], Name, Badnodes, Replies) ->$/;"	f	module:gen_server2
+rec_nodes_rest	gen_server2.erl	/^rec_nodes_rest(Tag, [{N,R}|Tail], Name, Badnodes, Replies) ->$/;"	f	module:gen_server2
+rec_nodes_rest	gen_server2.erl	/^rec_nodes_rest(_Tag, [], _Name, Badnodes, Replies) ->$/;"	f	module:gen_server2
+recv_value	erldis_client.erl	/^recv_value(Socket, NBytes) ->$/;"	f	module:erldis_client
+recv_value	erldis_sync_client.erl	/^recv_value(Socket, NBytes) ->$/;"	f	module:erldis_sync_client
+rename	erldis.erl	/^rename(Client, OldKey, NewKey) ->$/;"	f	module:erldis
+renamenx	erldis.erl	/^renamenx(Client, OldKey, NewKey) ->$/;"	f	module:erldis
+reply	gen_server2.erl	/^reply(Name, {To, Tag}, Reply, State, Debug) ->$/;"	f	module:gen_server2
+reply	gen_server2.erl	/^reply({To, Tag}, Reply) ->$/;"	f	module:gen_server2
+reverse	erldis_list.erl	/^reverse(Key, Client) -> foldl(fun(Item, L) -> [Item | L] end, [], Key, Client).$/;"	f	module:erldis_list
+rpop	erldis.erl	/^rpop(Client, Key) -> erldis_client:sr_scall(Client, [<<"rpop">>, Key]).$/;"	f	module:erldis
+rpush	erldis.erl	/^rpush(Client, Key, Value) ->$/;"	f	module:erldis
+sadd	erldis.erl	/^sadd(Client, Key, Member) ->$/;"	f	module:erldis
+save	erldis.erl	/^save(Client) -> erldis_client:scall(Client, <<"save">>).$/;"	f	module:erldis
+scall	erldis_client.erl	/^scall(Client, Args) -> scall(Client, Args, ?default_timeout).$/;"	f	module:erldis_client
+scall	erldis_client.erl	/^scall(Client, Args, Timeout) ->$/;"	f	module:erldis_client
+scall	erldis_sync_client.erl	/^scall(Client, Cmd) -> scall(Client, Cmd, []).$/;"	f	module:erldis_sync_client
+scall	erldis_sync_client.erl	/^scall(Client, Cmd, Args) ->$/;"	f	module:erldis_sync_client
+scard	erldis.erl	/^scard(Client, Key) ->$/;"	f	module:erldis
+sdiff	erldis.erl	/^sdiff(Client, Keys) -> erldis_client:scall(Client, [<<"sdiff">> | Keys]).$/;"	f	module:erldis
+sdiffstore	erldis.erl	/^sdiffstore(Client, DstKey, Keys) ->$/;"	f	module:erldis
+select	erldis.erl	/^select(Client, Index) ->$/;"	f	module:erldis
+select	erldis_client.erl	/^select(Client, DB) ->$/;"	f	module:erldis_client
+select	erldis_sync_client.erl	/^select(Client, DB) ->$/;"	f	module:erldis_sync_client
+send	erldis_client.erl	/^send(Client, Cmd, Timeout) ->$/;"	f	module:erldis_client
+send_nodes	gen_server2.erl	/^send_nodes(Nodes, Name, Tag, Req) ->$/;"	f	module:gen_server2
+send_nodes	gen_server2.erl	/^send_nodes([Node|Tail], Name, Tag, Req, Monitors)$/;"	f	module:gen_server2
+send_nodes	gen_server2.erl	/^send_nodes([], _Name, _Tag, _Req, Monitors) -> $/;"	f	module:gen_server2
+send_nodes	gen_server2.erl	/^send_nodes([_Node|Tail], Name, Tag, Req, Monitors) ->$/;"	f	module:gen_server2
+send_reply	erldis_client.erl	/^send_reply(#redis{pipeline=true, calls=Calls, results=Results, reply_caller=ReplyCaller}=State)->$/;"	f	module:erldis_client
+send_reply	erldis_client.erl	/^send_reply(State) ->$/;"	f	module:erldis_client
+send_reply	erldis_sync_client.erl	/^send_reply(State) ->$/;"	f	module:erldis_sync_client
+server_timeout	erldis_client.erl	/^server_timeout(V) when is_number(V) -> V \/ 1000.$/;"	f	module:erldis_client
+server_timeout	erldis_client.erl	/^server_timeout(infinity) -> 0;$/;"	f	module:erldis_client
+set	erldis.erl	/^set(Client, Key, Value) ->$/;"	f	module:erldis
+set	erldis_list.erl	/^set(I, Value, Key, Client) -> erldis:lset(Client, Key, I, Value).$/;"	f	module:erldis_list
+set_call	erldis_client.erl	/^set_call(Client, Cmd, Key, Val) ->$/;"	f	module:erldis_client
+set_call	erldis_client.erl	/^set_call(Client, Cmd, Key, Val) when is_binary(Val) ->$/;"	f	module:erldis_client
+set_pipelining	erldis.erl	/^set_pipelining(Client, Bool) -> gen_server2:cast(Client, {pipelining, Bool}).$/;"	f	module:erldis
+setnx	erldis.erl	/^setnx(Client, Key, Value) ->$/;"	f	module:erldis
+sformat	erldis_sync_client.erl	/^sformat(Line) ->$/;"	f	module:erldis_sync_client
+shutdown	erldis.erl	/^shutdown(Client) -> erldis_client:scall(Client, <<"shutdown">>).$/;"	f	module:erldis
+sinter	erldis.erl	/^sinter(Client, Keys) -> erldis_client:scall(Client, [<<"sinter">> | Keys]).$/;"	f	module:erldis
+sintersect	erldis.erl	/^sintersect(Client, Keys) -> sinter(Client, Keys).$/;"	f	module:erldis
+sinterstore	erldis.erl	/^sinterstore(Client, DstKey, Keys) ->$/;"	f	module:erldis
+sismember	erldis.erl	/^sismember(Client, Key, Member) ->$/;"	f	module:erldis
+size	erldis_dict.erl	/^size(Client) -> erldis:dbsize(Client).$/;"	f	module:erldis_dict
+size	erldis_list.erl	/^size(Key, Client) -> len(Key, Client).$/;"	f	module:erldis_list
+size	erldis_sets.erl	/^size(Client, Key) -> erldis:scard(Client, Key).$/;"	f	module:erldis_sets
+slaveof	erldis.erl	/^slaveof(Client) ->$/;"	f	module:erldis
+slaveof	erldis.erl	/^slaveof(Client, Host, Port) ->$/;"	f	module:erldis
+smembers	erldis.erl	/^smembers(Client, Key) ->$/;"	f	module:erldis
+smove	erldis.erl	/^smove(Client, SrcKey, DstKey, Member) ->$/;"	f	module:erldis
+sort	erldis.erl	/^sort(Client, Key) -> erldis_client:scall(Client, [<<"sort">>, Key]).$/;"	f	module:erldis
+sort	erldis.erl	/^sort(Client, Key, Extra) when is_binary(Key), is_binary(Extra) ->$/;"	f	module:erldis
+spop	erldis.erl	/^spop(Client, Key) ->$/;"	f	module:erldis
+sr_scall	erldis_client.erl	/^sr_scall(Client, Args) ->$/;"	f	module:erldis_client
+sr_scall	erldis_sync_client.erl	/^sr_scall(Client, Cmd) -> sr_scall(Client, Cmd, []).$/;"	f	module:erldis_sync_client
+sr_scall	erldis_sync_client.erl	/^sr_scall(Client, Cmd, Args) -> $/;"	f	module:erldis_sync_client
+srem	erldis.erl	/^srem(Client, Key, Member) ->$/;"	f	module:erldis
+start	erldis_app.erl	/^start(_Type, _Args) -> erldis_sup:start_link().$/;"	f	module:erldis_app
+start	erldis_client.erl	/^start(DB, ShouldLink) when is_integer(DB) ->$/;"	f	module:erldis_client
+start	erldis_client.erl	/^start(Host, Port, Options, DB, ShouldLink) ->$/;"	f	module:erldis_client
+start	erldis_client.erl	/^start(Host, Port, Options, false) ->$/;"	f	module:erldis_client
+start	erldis_client.erl	/^start(Host, Port, Options, true) ->$/;"	f	module:erldis_client
+start	erldis_client.erl	/^start(Host, Port, ShouldLink) ->$/;"	f	module:erldis_client
+start	erldis_client.erl	/^start(Host, ShouldLink) when is_list(Host) ->$/;"	f	module:erldis_client
+start	erldis_client.erl	/^start(ShouldLink) ->$/;"	f	module:erldis_client
+start	gen_server2.erl	/^start(Mod, Args, Options) ->$/;"	f	module:gen_server2
+start	gen_server2.erl	/^start(Name, Mod, Args, Options) ->$/;"	f	module:gen_server2
+start_link	erldis_client.erl	/^start_link() -> start(true).$/;"	f	module:erldis_client
+start_link	erldis_client.erl	/^start_link(DB) when is_integer(DB) -> start(DB, true).$/;"	f	module:erldis_client
+start_link	erldis_client.erl	/^start_link(Host) when is_list(Host) -> start(Host, true);$/;"	f	module:erldis_client
+start_link	erldis_client.erl	/^start_link(Host, Port) -> start(Host, Port, true).$/;"	f	module:erldis_client
+start_link	erldis_client.erl	/^start_link(Host, Port, Options) -> start(Host, Port, Options, true).$/;"	f	module:erldis_client
+start_link	erldis_client.erl	/^start_link(Host, Port, Options, DB) -> start(Host, Port, Options, DB, true).$/;"	f	module:erldis_client
+start_link	erldis_sup.erl	/^start_link() ->$/;"	f	module:erldis_sup
+start_link	gen_server2.erl	/^start_link(Mod, Args, Options) ->$/;"	f	module:gen_server2
+start_link	gen_server2.erl	/^start_link(Name, Mod, Args, Options) ->$/;"	f	module:gen_server2
+start_monitor	gen_server2.erl	/^start_monitor(Node, Name) when is_atom(Node), is_atom(Name) ->$/;"	f	module:gen_server2
+stop	erldis_app.erl	/^stop(Client) when is_pid(Client) ->$/;"	f	module:erldis_app
+stop	erldis_app.erl	/^stop(_State) ->$/;"	f	module:erldis_app
+stop	erldis_client.erl	/^stop(Client) -> gen_server2:call(Client, disconnect).$/;"	f	module:erldis_client
+stop	erldis_sync_client.erl	/^stop(Client) -> gen_server:call(Client, disconnect).$/;"	f	module:erldis_sync_client
+store	erldis_dict.erl	/^store(Key, Value, Client) -> erldis:set(Client, Key, Value).$/;"	f	module:erldis_dict
+store	erldis_dict.erl	/^store(Key, [], Client) -> erase(Key, Client);$/;"	f	module:erldis_dict
+str	erldis_sync_client.erl	/^str(X) when is_atom(X) ->$/;"	f	module:erldis_sync_client
+str	erldis_sync_client.erl	/^str(X) when is_binary(X) ->$/;"	f	module:erldis_sync_client
+str	erldis_sync_client.erl	/^str(X) when is_float(X) ->$/;"	f	module:erldis_sync_client
+str	erldis_sync_client.erl	/^str(X) when is_integer(X) ->$/;"	f	module:erldis_sync_client
+str	erldis_sync_client.erl	/^str(X) when is_list(X) ->$/;"	f	module:erldis_sync_client
+sublist	erldis_list.erl	/^sublist(Key, Client, Len) -> sublist(Key, Client, 1, Len).$/;"	f	module:erldis_list
+sublist	erldis_list.erl	/^sublist(Key, Client, Start, 1) ->$/;"	f	module:erldis_list
+sublist	erldis_list.erl	/^sublist(Key, Client, Start, Len) when Start < 0, Len > 1 ->$/;"	f	module:erldis_list
+sublist	erldis_list.erl	/^sublist(Key, Client, Start, Len) when Start > 0, Len > 1 ->$/;"	f	module:erldis_list
+subscribe	erldis.erl	/^subscribe(Client, Channel, Pid) ->$/;"	f	module:erldis
+subscribe	erldis_client.erl	/^subscribe(Client, Cmd, Class, Pid)->$/;"	f	module:erldis_client
+subtract	erldis_sets.erl	/^subtract(Client, Key1, Key2) -> subtract(Client, [Key1, Key2]).$/;"	f	module:erldis_sets
+subtract	erldis_sets.erl	/^subtract(Client, Keys) -> erldis:sdiff(Client, Keys).$/;"	f	module:erldis_sets
+sunion	erldis.erl	/^sunion(Client, Keys) ->$/;"	f	module:erldis
+sunionstore	erldis.erl	/^sunionstore(Client, DstKey, Keys) ->$/;"	f	module:erldis
+system_code_change	gen_server2.erl	/^system_code_change([Name, State, Mod, Time, Queue], _Module, OldVsn, Extra) ->$/;"	f	module:gen_server2
+system_continue	gen_server2.erl	/^system_continue(Parent, Debug, [Name, State, Mod, Time, Queue]) ->$/;"	f	module:gen_server2
+system_terminate	gen_server2.erl	/^system_terminate(Reason, _Parent, Debug, [Name, State, Mod, _Time, _Queue]) ->$/;"	f	module:gen_server2
+terminate	erldis_client.erl	/^terminate(_Reason, State) ->$/;"	f	module:erldis_client
+terminate	erldis_sync_client.erl	/^terminate(_Reason, State) ->$/;"	f	module:erldis_sync_client
+terminate	gen_server2.erl	/^terminate(Reason, Name, Msg, Mod, State, Debug) ->$/;"	f	module:gen_server2
+to_binary	erldis_binaries.erl	/^to_binary(X) -> term_to_binary(X).$/;"	f	module:erldis_binaries
+to_binary	erldis_binaries.erl	/^to_binary(X) when is_atom(X) -> list_to_binary(atom_to_list(X));$/;"	f	module:erldis_binaries
+to_binary	erldis_binaries.erl	/^to_binary(X) when is_binary(X) -> X;$/;"	f	module:erldis_binaries
+to_binary	erldis_binaries.erl	/^to_binary(X) when is_float(X) -> list_to_binary(float_to_list(X));$/;"	f	module:erldis_binaries
+to_binary	erldis_binaries.erl	/^to_binary(X) when is_integer(X) -> list_to_binary(integer_to_list(X));$/;"	f	module:erldis_binaries
+to_binary	erldis_binaries.erl	/^to_binary(X) when is_list(X) -> list_to_binary(X);$/;"	f	module:erldis_binaries
+to_list	erldis_list.erl	/^to_list(Key, Client) -> foldr(fun(Item, L) -> [Item | L] end, [], Key, Client).$/;"	f	module:erldis_list
+to_list	erldis_sets.erl	/^to_list(Client, Key) -> erldis:smembers(Client, Key).$/;"	f	module:erldis_sets
+transact	erldis_client.erl	/^transact(Client, F) when is_pid(Client) ->$/;"	f	module:erldis_client
+transact	erldis_client.erl	/^transact(DB, F) when is_integer(DB) ->$/;"	f	module:erldis_client
+transact	erldis_client.erl	/^transact(F) ->$/;"	f	module:erldis_client
+transact	erldis_sync_client.erl	/^transact(Client, F) when is_pid(Client) ->$/;"	f	module:erldis_sync_client
+transact	erldis_sync_client.erl	/^transact(DB, F) when is_integer(DB) ->$/;"	f	module:erldis_sync_client
+transact	erldis_sync_client.erl	/^transact(F) ->$/;"	f	module:erldis_sync_client
+trim2	erldis_client.erl	/^trim2(S) ->$/;"	f	module:erldis_client
+trim2	erldis_client.erl	/^trim2({ok, S}) ->$/;"	f	module:erldis_client
+trim2	erldis_sync_client.erl	/^trim2(S) ->$/;"	f	module:erldis_sync_client
+trim2	erldis_sync_client.erl	/^trim2({ok, S}) ->$/;"	f	module:erldis_sync_client
+ttl	erldis.erl	/^ttl(Client, Key) -> erldis_client:sr_scall(Client, [<<"ttl">>, Key]).$/;"	f	module:erldis
+type	erldis.erl	/^type(Client, Key) -> erldis_client:sr_scall(Client, [<<"type">>, Key]).$/;"	f	module:erldis
+umerge	erldis_list.erl	/^umerge(F, L, Key, Client) -> umerge(0, F, L, Key, Client).$/;"	f	module:erldis_list
+umerge	erldis_list.erl	/^umerge(I, F, A, [B | L], Key, Client) ->$/;"	f	module:erldis_list
+umerge	erldis_list.erl	/^umerge(I, F, A, [B | L], Key, Client) when A == B ->$/;"	f	module:erldis_list
+umerge	erldis_list.erl	/^umerge(I, F, L, Key, Client) ->$/;"	f	module:erldis_list
+umerge	erldis_list.erl	/^umerge(_, _, [], _, _) ->$/;"	f	module:erldis_list
+union	erldis_sets.erl	/^union(Client, Keys) -> erldis:sunion(Client, Keys).$/;"	f	module:erldis_sets
+unmonitor	gen_server2.erl	/^unmonitor(Ref) when is_reference(Ref) ->$/;"	f	module:gen_server2
+unsubscribe	erldis.erl	/^unsubscribe(Client)->$/;"	f	module:erldis
+unsubscribe	erldis.erl	/^unsubscribe(Client, Channel) ->$/;"	f	module:erldis
+unsubscribe	erldis_client.erl	/^unsubscribe(Client, Cmd, Class)->$/;"	f	module:erldis_client
+update	erldis_dict.erl	/^update(Key, Fun, Client) -> store(Key, Fun(fetch(Key, Client)), Client).$/;"	f	module:erldis_dict
+update	erldis_dict.erl	/^update(Key, Fun, Initial, Client) ->$/;"	f	module:erldis_dict
+update_counter	erldis_dict.erl	/^update_counter(Key, 1, Client) -> erldis:incr(Client, Key);$/;"	f	module:erldis_dict
+update_counter	erldis_dict.erl	/^update_counter(Key, Client) -> update_counter(Key, 1, Client).$/;"	f	module:erldis_dict
+update_counter	erldis_dict.erl	/^update_counter(Key, Incr, Client) -> erldis:incrby(Client, Key, Incr)./;"	f	module:erldis_dict
+withscores	erldis.erl	/^withscores(L) -> $/;"	f	module:erldis
+withscores	erldis.erl	/^withscores([Member, Score | T], Acc) ->$/;"	f	module:erldis
+withscores	erldis.erl	/^withscores([], Acc) ->$/;"	f	module:erldis
+withscores	erldis.erl	/^withscores([_], _Acc) ->$/;"	f	module:erldis
+zadd	erldis.erl	/^zadd(Client, Key, Score, Member) ->$/;"	f	module:erldis
+zcard	erldis.erl	/^zcard(Client, Key) ->$/;"	f	module:erldis
+zincrby	erldis.erl	/^zincrby(Client, Key, By, Member) ->$/;"	f	module:erldis
+zrange	erldis.erl	/^zrange(Client, Key, Start, End) ->$/;"	f	module:erldis
+zrange_withscores	erldis.erl	/^zrange_withscores(Client, Key, Start, End) ->$/;"	f	module:erldis
+zrangebyscore	erldis.erl	/^zrangebyscore(Client, Key, Min, Max) ->$/;"	f	module:erldis
+zrangebyscore	erldis.erl	/^zrangebyscore(Client, Key, Min, Max, Offset, Count) ->$/;"	f	module:erldis
+zrem	erldis.erl	/^zrem(Client, Key, Member) ->$/;"	f	module:erldis
+zremrangebyscore	erldis.erl	/^zremrangebyscore(Client, Key, Min, Max) ->$/;"	f	module:erldis
+zrevrange	erldis.erl	/^zrevrange(Client, Key, Start, End) ->$/;"	f	module:erldis
+zrevrange_withscores	erldis.erl	/^zrevrange_withscores(Client, Key, Start, End) ->$/;"	f	module:erldis
+zscore	erldis.erl	/^zscore(Client, Key, Member) ->$/;"	f	module:erldis
