@@ -407,7 +407,7 @@ send_reply(State) ->
 
 parse_state(State, Socket, Data) ->
 	Parse = erldis_proto:parse(State#redis.pstate, trim2(Data)),
-	
+%        error_logger:error_msg({trimmed, trim2(Data), parsed, Parse}),
 	case {State#redis.remaining-1, Parse} of
 		{0, error} ->
 			% next line is the error string
@@ -432,9 +432,9 @@ parse_state(State, Socket, Data) ->
                                      _ -> NewState
                                    end
                         end;
-		{_, {read, 0}} ->
-			% reply with nil
-			send_reply(State#redis{buffer=[]});
+                {_, {read, 0}} when State#redis.pstate =:= empty ->
+                        % this is needed to handle single-line reply empty responses
+                        send_reply(State#redis{buffer=[]});
 		{0, {read, NBytes}} ->
 			% reply with Value added to buffer
 			Value = recv_value(Socket, NBytes),
