@@ -203,6 +203,14 @@ zrangebyscore(Client, Key, Min, Max, Offset, Count) ->
 	Cmd = [<<"zrangebyscore">>, Key, Min, Max, <<"limit">>, Offset, Count],
 	erldis_client:scall(Client, Cmd).
 
+zrangebyscore_withscores(Client, Key, Min, Max) ->
+        Cmd = [<<"zrangebyscore">>, Key, Min, Max, <<"withscores">>],
+	withscores(erldis_client:scall(Client, Cmd)).
+
+zrangebyscore_withscores(Client, Key, Min, Max, Offset, Count) ->
+	Cmd = [<<"zrangebyscore">>, Key, Min, Max, <<"limit">>, Offset, Count, <<"withscores">>],
+	withscores(erldis_client:scall(Client, Cmd)).
+
 zcard(Client, Key) ->
 	numeric(erldis_client:sr_scall(Client, [<<"zcard">>, Key])).
 
