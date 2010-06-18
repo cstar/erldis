@@ -254,7 +254,7 @@ hlen(Client, Key) -> numeric(erldis_client:sr_scall(Client, [<<"hlen">>, Key])).
 
 hkeys(Client, Key) -> erldis_client:scall(Client, [<<"hkeys">>, Key]).
 
-%% TODO: hvals
+hvals(Client, Key) -> erldis_client:scall(Client, [<<"hvals">>, Key]).
 
 hgetall(Client, Key) ->
 	tuplelist(erldis_client:scall(Client, [<<"hgetall">>, Key])).
