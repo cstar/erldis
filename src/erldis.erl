@@ -256,7 +256,8 @@ hkeys(Client, Key) -> erldis_client:scall(Client, [<<"hkeys">>, Key]).
 
 %% TODO: hvals
 
-hgetall(Client, Key) -> erldis_client:scall(Client, [<<"hgetall">>, Key]).
+hgetall(Client, Key) ->
+	tuplelist(erldis_client:scall(Client, [<<"hgetall">>, Key])).
 
 %%%%%%%%%%%%%
 %% Sorting %%
@@ -403,11 +404,17 @@ numeric(I) when is_list(I) ->
 numeric(I) ->
 	I.
 
-withscores(L) -> 
-	withscores(L,[]).
-withscores([], Acc) ->
+identity(V) -> V.
+
+tuplelist(L, D) when is_function(D, 1) ->
+	tuplelist(L, D, []).
+tuplelist([], _D, Acc) ->
 	lists:reverse(Acc);
-withscores([_], _Acc) ->
+tuplelist([_], _D, _Acc) ->
 	erlang:error(badarg);
-withscores([Member, Score | T], Acc) ->
-	withscores(T, [{Member, numeric(Score)} | Acc]).
+tuplelist([Field, Value | T], D, Acc) ->
+	tuplelist(T, D, [{Field, D(Value)} | Acc]).
+
+tuplelist(L) -> tuplelist(L, fun identity/1).
+
+withscores(L) -> tuplelist(L, fun numeric/1).
