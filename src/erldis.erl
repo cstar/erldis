@@ -346,7 +346,7 @@ lastsave(Client) -> erldis_client:scall(Client, <<"lastsave">>).
 
 shutdown(Client) -> erldis_client:scall(Client, <<"shutdown">>).
 
-%% TODO: bgrewriteaof
+bgrewriteaof(Client) -> erldis_client:scall(Client, <<"bgrewriteaof">>).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Remote server control commands %%
