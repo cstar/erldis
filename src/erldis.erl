@@ -206,6 +206,9 @@ zrangebyscore(Client, Key, Min, Max, Offset, Count) ->
 zcard(Client, Key) ->
 	numeric(erldis_client:sr_scall(Client, [<<"zcard">>, Key])).
 
+zcount(Client, Key, Min, Max) ->
+	numeric(erldis_client:sr_scall(Client, [<<"zcount">>, Key, Min, Max])).
+
 zscore(Client, Key, Member) ->
 	numeric(erldis_client:sr_scall(Client, [<<"zscore">>, Key, Member])).
 
