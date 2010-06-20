@@ -40,7 +40,7 @@ basic_test() ->
 	?assertNot(erldis:exists(Client, <<"foo">>)),
 	?assertEqual([], erldis:keys(Client, <<"*">>)),
 
-	?assertEqual(<<"PONG">>, erldis:ping()),
+	?assertEqual(pong, erldis:ping(Client)),
 	
 	?assertEqual(shutdown, erldis:quit(Client)).
 
@@ -113,15 +113,15 @@ zset_test() ->
 	?assertEqual([{<<"elem1">>, 5}], erldis:zrevrange_withscores(Client, <<"foo">>, 0, 1)),
 	?assertEqual(false, erldis:zadd(Client, <<"foo">>, 6, <<"elem1">>)),
 	?assertEqual(1, erldis:zcard(Client, <<"foo">>)),
-	?assertEqual(0, erldis:zcount(Client, <<"foo">>, 0, 2))),
-	?assertEqual(1, erldis:zcount(Client, <<"foo">>, 0, 10))),
+	?assertEqual(0, erldis:zcount(Client, <<"foo">>, 0, 2)),
+	?assertEqual(1, erldis:zcount(Client, <<"foo">>, 0, 10)),
 	?assertEqual(6, erldis:zscore(Client, <<"foo">>, <<"elem1">>)),
 	?assertEqual(8, erldis:zincrby(Client, <<"foo">>, 2, <<"elem1">>)),
 	% can use list keys & values too
 	?assertEqual(true, erldis:zadd(Client, "foo", 1.5, "a-elem")),
 	?assertEqual(2, erldis:zcard(Client, "foo")),
-	?assertEqual(1, erldis:zcount(Client, <<"foo">>, 0, 2))),
-	?assertEqual(2, erldis:zcount(Client, <<"foo">>, 0, 10))),
+	?assertEqual(1, erldis:zcount(Client, <<"foo">>, 0, 2)),
+	?assertEqual(2, erldis:zcount(Client, <<"foo">>, 0, 10)),
 	?assertEqual(1.5, erldis:zscore(Client, "foo", "a-elem")),
 	?assertEqual([<<"a-elem">>, <<"elem1">>], erldis:zrange(Client, "foo", 0, 2)),
 	?assertEqual([<<"elem1">>, <<"a-elem">>], erldis:zrevrange(Client, "foo", 0, 2)),
@@ -140,15 +140,15 @@ zset_test() ->
 	?assertEqual(1, erldis:zremrangebyscore(Client, "foo", 1, 2)),
 	?assertEqual(false, erldis:zrem(Client, "foo", "a-elem")),
 	?assertEqual(1, erldis:zcard(Client, "foo")),
-	?assertEqual(0, erldis:zcount(Client, <<"foo">>, 0, 2))),
-	?assertEqual(1, erldis:zcount(Client, <<"foo">>, 0, 10))),
+	?assertEqual(0, erldis:zcount(Client, <<"foo">>, 0, 2)),
+	?assertEqual(1, erldis:zcount(Client, <<"foo">>, 0, 10)),
 	?assertEqual([<<"elem1">>], erldis:zrevrange(Client, "foo", 0, 1)),
 	
 	?assertEqual(true, erldis:zrem(Client, <<"foo">>, <<"elem1">>)),
 	?assertEqual(false, erldis:zrem(Client, <<"foo">>, <<"elem1">>)),
 	?assertEqual(0, erldis:zcard(Client, <<"foo">>)),
-	?assertEqual(0, erldis:zcount(Client, <<"foo">>, 0, 2))),
-	?assertEqual(0, erldis:zcount(Client, <<"foo">>, 0, 10))),
+	?assertEqual(0, erldis:zcount(Client, <<"foo">>, 0, 2)),
+	?assertEqual(0, erldis:zcount(Client, <<"foo">>, 0, 10)),
 	?assertEqual([], erldis:zrange(Client, <<"foo">>, 0, 2)),
 	
 	?assertEqual(shutdown, erldis:quit(Client)).
