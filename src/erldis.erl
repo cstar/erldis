@@ -356,6 +356,11 @@ bgrewriteaof(Client) -> erldis_client:scall(Client, <<"bgrewriteaof">>).
 auth(Client, Password) ->
 	erldis_client:scall(Client, [<<"auth">>, Password]).
 
+%%%%%%%%%%
+%% Ping %%
+%%%%%%%%%%
+ping(Client) -> erldis_client:sr_scall(Client, <<"ping">>).
+
 %% @doc Returns proplist of redis stats
 info(Client) ->
 	F = fun(Tok, Stats) ->

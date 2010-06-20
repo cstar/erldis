@@ -39,6 +39,8 @@ basic_test() ->
 	?assertNot(erldis:exists(Client, <<"hello">>)),
 	?assertNot(erldis:exists(Client, <<"foo">>)),
 	?assertEqual([], erldis:keys(Client, <<"*">>)),
+
+	?assertEqual(<<"PONG">>, erldis:ping()),
 	
 	?assertEqual(shutdown, erldis:quit(Client)).
 
