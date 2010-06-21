@@ -237,6 +237,9 @@ zremrangebyscore(Client, Key, Min, Max) ->
 hset(Client, Key, Field, Value) ->
 	erldis_client:sr_scall(Client, [<<"hset">>, Key, Field, Value]).
 
+hsetnx(Client, Key, Field, Value) ->
+	erldis_client:sr_scall(Client, [<<"hsetnx">>, Key, Field, Value]).
+
 hget(Client, Key, Field) ->
 	erldis_client:sr_scall(Client, [<<"hget">>, Key, Field]).
 

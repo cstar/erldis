@@ -59,6 +59,8 @@ hash_test() ->
 	{ok, Client} = erldis:connect(),
 	?assertEqual(ok, erldis:flushdb(Client)),
 	?assertEqual(true, erldis:hset(Client, <<"key">>, <<"field">>, <<"value">>)),
+	?assert(erldis:hsetnx(Client, <<"keyNX">>, <<"fieldNX">>, <<"valueNX">>)),
+	?assertNot(erldis:hsetnx(Client, <<"keyNX">>, <<"fieldNX">>, <<"valueNX">>)),
 	?assertEqual(ok, erldis:hmset(Client, <<"key2">>, [{<<"field">>, <<"value2">>}])),
 	?assertEqual(ok, erldis:hmset(Client, <<"key2">>, [{<<"fieldM">>, <<"valueM">>}, {<<"fieldK">>, <<"valueK">>}])),
 	?assertEqual(<<"value">>, erldis:hget(Client, <<"key">>, <<"field">>)),
