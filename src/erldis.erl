@@ -26,6 +26,8 @@ exists(Client, Key) -> erldis_client:sr_scall(Client, [<<"exists">>, Key]).
 
 del(Client, Key) -> erldis_client:sr_scall(Client, [<<"del">>, Key]).
 
+delkeys(Client, Keys) -> erldis_client:sr_scall(Client, [<<"del">> | Keys]).
+
 type(Client, Key) -> erldis_client:sr_scall(Client, [<<"type">>, Key]).
 
 keys(Client, Pattern) -> erldis_client:scall(Client, [<<"keys">>, Pattern]).
