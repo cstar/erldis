@@ -33,11 +33,13 @@ basic_test() ->
 		(_L) -> false
 	    end,
 	?assert(ListCheck(erldis:keys(Client, <<"*">>))),
-	
+
+	ok = erldis:set(Client, <<"funky">>, <<"monkey">>),
 	?assert(erldis:del(Client, <<"hello">>)),
-	?assert(erldis:del(Client, <<"foo">>)),
+	?assertEqual(2, erldis:delkeys(Client, [<<"foo">>, <<"funky">>])),
 	?assertNot(erldis:exists(Client, <<"hello">>)),
 	?assertNot(erldis:exists(Client, <<"foo">>)),
+	?assertNot(erldis:exists(Client, <<"funky">>)),
 	?assertEqual([], erldis:keys(Client, <<"*">>)),
 
 	?assertEqual(pong, erldis:ping(Client)),
