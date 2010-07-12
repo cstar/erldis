@@ -33,7 +33,7 @@ keys(Client, Pattern) ->
 	% NOTE: with binary-list conversion, timer:tc says 26000-30000 microseconds
 	case erldis_client:scall(Client, [<<"keys">>, Pattern]) of
 		[] -> [];
-		[B] -> [list_to_binary(S) || S <- string:tokens(binary_to_list(B), " ")]
+		B -> B
 	end.
 
 % TODO: test randomkey, rename, renamenx, dbsize, expire, ttl

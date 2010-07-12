@@ -26,7 +26,14 @@ basic_test() ->
 	?assertEqual(<<"bar">>, erldis:get(Client, <<"foo">>)),
 	?assertEqual([<<"kitty!">>, <<"bar">>], erldis:mget(Client, [<<"hello">>, <<"foo">>])),
 	?assertEqual([<<"foo">>], erldis:keys(Client, <<"f*">>)),
+	erldis:set(Client,<<"foo1">>,<<"bar">>),
+	erldis:set(Client,<<"foo2">>,<<"bar">>),
+	erldis:set(Client,<<"foo3">>,<<"bar">>),
+	?assertEqual([<<"foo">>,<<"foo1">>,<<"foo2">>,<<"foo3">>], erldis:keys(Client, <<"f*">>)),
+	erldis:set(Client,<<"quux">>,<<"ohai">>),
+	?assertEqual([<<"quux">>], erldis:keys(Client, <<"q*">>)),
 	
+
 	?assert(erldis:del(Client, <<"hello">>)),
 	?assert(erldis:del(Client, <<"foo">>)),
 	?assertNot(erldis:exists(Client, <<"hello">>)),
