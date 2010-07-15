@@ -1,4 +1,5 @@
-{"0.3.1", [
+{"0.3.2", [
+	{"0.3.1", [{load_module, erldis}]},
 	{"0.3.0", [
 		{load_module, erldis_proto},
 		{load_module, erldis_client}
@@ -70,6 +71,7 @@
 		{add_module, erldis_sets}
 	]}
 ], [
+	{"0.3.1", [{load_module, erldis}]},
 	{"0.3.0", [
 		{load_module, erldis_proto},
 		{load_module, erldis_client}
