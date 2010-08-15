@@ -26,15 +26,14 @@ basic_test() ->
 	?assertEqual(<<"bar">>, erldis:get(Client, <<"foo">>)),
 	?assertEqual([<<"kitty!">>, <<"bar">>], erldis:mget(Client, [<<"hello">>, <<"foo">>])),
 	?assertEqual([<<"foo">>], erldis:keys(Client, <<"f*">>)),
+	erldis:set(Client,<<"foo1">>,<<"bar">>),
+	erldis:set(Client,<<"foo2">>,<<"bar">>),
+	erldis:set(Client,<<"foo3">>,<<"bar">>),
+	?assertEqual([<<"foo">>,<<"foo1">>,<<"foo2">>,<<"foo3">>], erldis:keys(Client, <<"f*">>)),
+	erldis:set(Client,<<"quux">>,<<"ohai">>),
+	?assertEqual([<<"quux">>], erldis:keys(Client, <<"q*">>)),
+	
 
-	ListCheck = fun
-		([<<"foo">>, <<"hello">>]) -> true;
-		([<<"hello">>, <<"foo">>]) -> true;
-		(_L) -> false
-	    end,
-	?assert(ListCheck(erldis:keys(Client, <<"*">>))),
-
-	ok = erldis:set(Client, <<"funky">>, <<"monkey">>),
 	?assert(erldis:del(Client, <<"hello">>)),
 	?assertEqual(2, erldis:delkeys(Client, [<<"foo">>, <<"funky">>])),
 	?assertNot(erldis:exists(Client, <<"hello">>)),
