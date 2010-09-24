@@ -29,10 +29,9 @@ del(Client, Key) -> erldis_client:sr_scall(Client, [<<"del">>, Key]).
 type(Client, Key) -> erldis_client:sr_scall(Client, [<<"type">>, Key]).
 
 keys(Client, Pattern) ->
-	case erldis_client:scall(Client, [<<"keys">>, Pattern]) of
-		[] -> [];
-		B -> B
-	end.
+	% TODO: tokenize the binary directly (if is faster)
+	% NOTE: with binary-list conversion, timer:tc says 26000-30000 microseconds
+	erldis_client:scall(Client, [<<"keys">>, Pattern]).
 
 % TODO: test randomkey, rename, renamenx, dbsize, expire, ttl
 
