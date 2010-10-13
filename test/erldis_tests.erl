@@ -35,7 +35,7 @@ basic_test() ->
 	
 
 	?assert(erldis:del(Client, <<"hello">>)),
-	?assertEqual(2, erldis:delkeys(Client, [<<"foo">>, <<"funky">>])),
+	?assertEqual(5, erldis:delkeys(Client, [<<"foo">>, <<"funky">>, <<"foo1">>,<<"foo2">>,<<"foo3">>,<<"quux">>])),
 	?assertNot(erldis:exists(Client, <<"hello">>)),
 	?assertNot(erldis:exists(Client, <<"foo">>)),
 	?assertNot(erldis:exists(Client, <<"funky">>)),
