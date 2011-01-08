@@ -96,6 +96,8 @@ list_test() ->
 	?assertEqual([<<"1">>, <<"2">>, <<"3">>], erldis:sort(Client, <<"a_list">>)),
 	?assertEqual([<<"3">>, <<"2">>, <<"1">>], erldis:sort(Client, <<"a_list">>, <<"DESC">>)),
 	?assertEqual([<<"1">>, <<"2">>], erldis:sort(Client, <<"a_list">>, <<"LIMIT 0 2 ASC">>)),
+	?assertEqual(<<"1">>, erldis:rpoplpush(Client, <<"a_list">>, <<"b_list">>)),
+	?assertEqual(<<"1">>, erldis:lindex(Client, <<"b_list">>, 0)),
 	
 	?assertEqual(shutdown, erldis:quit(Client)).
 

@@ -126,7 +126,7 @@ brpop(Client, Keys) -> brpop(Client, Keys, infinity).
 
 brpop(Client, Keys, Timeout) -> erldis_client:bcall(Client, [<<"brpop">> | Keys], Timeout).
 
-% TODO: rpoplpush
+rpoplpush(Client, Key1, Key2) -> erldis_client:sr_scall(Client, [<<"rpoplpush">>, Key1, Key2]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Commands operating on sets %%
