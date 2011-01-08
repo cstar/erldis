@@ -29,7 +29,7 @@ basic_test() ->
 	erldis:set(Client,<<"foo1">>,<<"bar">>),
 	erldis:set(Client,<<"foo2">>,<<"bar">>),
 	erldis:set(Client,<<"foo3">>,<<"bar">>),
-	?assertEqual([<<"foo">>,<<"foo1">>,<<"foo2">>,<<"foo3">>], erldis:keys(Client, <<"f*">>)),
+	?assertEqual([<<"foo">>,<<"foo1">>,<<"foo2">>,<<"foo3">>], lists:sort(erldis:keys(Client, <<"f*">>))),
 	erldis:set(Client,<<"quux">>,<<"ohai">>),
 	?assertEqual([<<"quux">>], erldis:keys(Client, <<"q*">>)),
 	
