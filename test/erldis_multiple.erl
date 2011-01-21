@@ -11,14 +11,14 @@ test() ->
   io:format("Expected Result: ~n"),
   io:format("~w~n", [erldis:zrevrange(Conn, "erldis_fail", 0, 30)]),
   io:format("SNIP ~n~n"),
-  %Pid = spawn_link(erldis_multiple, server, [self(), Conn]),
+  Pid = spawn_link(erldis_multiple, server, [self(), Conn]),
   run_test(Conn, 1000).
 
 get_key(Conn) -> 
   %erldis:zrevrange_withscores(Conn, "erldis_fail", 0, 30).
-  %Res = send(Conn, fun(Redis)->
-  Res =   erldis:zrevrange(Conn, "erldis_fail", 0, 30),
-  %end),
+  Res = send(Conn, fun(Redis)->
+      erldis:zrevrange(Conn, "erldis_fail", 0, 30)
+  end),
   try 5 = length(Res)
   catch
     error:{badmatch, _} -> 
@@ -27,8 +27,8 @@ get_key(Conn) ->
   end.
 
 run_test(_Conn, 0) ->
-  %receive done -> done end;
-  done;
+  receive done -> done end;
+  %done;
 run_test(Conn, N) ->
   spawn_link(erldis_multiple, get_key, [Conn]),
   run_test(Conn, N-1).
