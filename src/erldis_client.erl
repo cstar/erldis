@@ -94,7 +94,7 @@ unsubscribe(Client, Cmd, Class)->
 % Erlang uses milliseconds, with symbol "infinity" for "wait forever";
 % redis uses seconds, with 0 for "wait forever".
 server_timeout(infinity) -> 0;
-server_timeout(V) when is_number(V) -> V / 1000.
+server_timeout(V) when is_number(V) -> round(V / 1000).
 
 % Kludge on a few milliseconds to the timeout we gave the server, to
 % give the network and client a chance to catch up.
