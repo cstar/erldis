@@ -1,5 +1,4 @@
-.hg/
-.hgignore
+ebin/*
 *.beam
-.plt
-.DS_Store
+deps/*
+
