@@ -19,8 +19,8 @@ clean:
 realclean: clean
 	@rebar delete-deps
 
-test:
-	@rebar skip_deps=true ct
+tests:
+	@rebar skip_deps=true eunit
 
 rel: deps
 	@rebar compile generate
