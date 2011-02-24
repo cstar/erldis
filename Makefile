@@ -7,23 +7,23 @@ EBIN_DIRS		:= $(wildcard deps/*/ebin)
 all: deps compile
 
 compile: deps
-	@rebar compile
+	@./rebar compile
 
 deps:
-	@rebar get-deps
-	@rebar check-deps
+	@./rebar get-deps
+	@./rebar check-deps
 
 clean:
-	@rebar clean
+	@./rebar clean
 
 realclean: clean
-	@rebar delete-deps
+	@./rebar delete-deps
 
 tests:
-	@rebar skip_deps=true eunit
+	@./rebar skip_deps=true eunit
 
 rel: deps
-	@rebar compile generate
+	@./rebar compile generate
 
 doc:
 	rebar skip_deps=true doc
@@ -32,10 +32,10 @@ console:
 	@erl -pa deps/*/ebin deps/*/include ebin include -boot start_sasl
 
 analyze: checkplt
-	@rebar skip_deps=true dialyze
+	@./rebar skip_deps=true dialyze
 
 buildplt:
-	@rebar skip_deps=true build-plt
+	@./rebar skip_deps=true build-plt
 
 checkplt: buildplt
-	@rebar skip_deps=true check-plt
+	@./rebar skip_deps=true check-plt
