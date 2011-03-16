@@ -110,6 +110,7 @@ zset_test() ->
 	?assertEqual(0, erldis:zcount(Client, <<"foo">>, 0, 10)),
 	?assertEqual([], erldis:zrange(Client, <<"foo">>, 0, 1)),
 	?assertEqual(0, erldis:zscore(Client, <<"foo">>, <<"elem1">>)),
+	?assertEqual(0, erldis:zrank(Client, <<"foo">>, <<"elem1">>)),
 	
 	?assertEqual(true, erldis:zadd(Client, <<"foo">>, 5, <<"elem1">>)),
 	?assertEqual([<<"elem1">>], erldis:zrange(Client, <<"foo">>, 0, 1)),
@@ -128,6 +129,10 @@ zset_test() ->
 	?assertEqual(1, erldis:zcount(Client, <<"foo">>, 0, 2)),
 	?assertEqual(2, erldis:zcount(Client, <<"foo">>, 0, 10)),
 	?assertEqual(1.5, erldis:zscore(Client, "foo", "a-elem")),
+	?assertEqual(1, erldis:zrank(Client, <<"foo">>, <<"elem1">>)),
+	?assertEqual(0, erldis:zrank(Client, <<"foo">>, <<"a-elem">>)),
+	?assertEqual(0, erldis:zrevrank(Client, <<"foo">>, <<"elem1">>)),
+	?assertEqual(1, erldis:zrevrank(Client, <<"foo">>, <<"a-elem">>)),
 	?assertEqual([<<"a-elem">>, <<"elem1">>], erldis:zrange(Client, "foo", 0, 2)),
 	?assertEqual([<<"elem1">>, <<"a-elem">>], erldis:zrevrange(Client, "foo", 0, 2)),
 	?assertEqual([{<<"a-elem">>, 1.5}, {<<"elem1">>, 8}], erldis:zrange_withscores(Client, "foo", 0, 2)),

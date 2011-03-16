@@ -185,7 +185,11 @@ zrem(Client, Key, Member) ->
 zincrby(Client, Key, By, Member) ->
 	numeric(erldis_client:sr_scall(Client, [<<"zincrby">>, Key, By, Member])).
 
-%% TODO: zrank, zrevrank
+zrank(Client, Key, Member) ->
+	numeric(erldis_client:sr_scall(Client, [<<"zrank">>, Key, Member])).
+
+zrevrank(Client, Key, Member) ->
+	numeric(erldis_client:sr_scall(Client, [<<"zrevrank">>, Key, Member])).
 
 zrange(Client, Key, Start, End) ->
 	erldis_client:scall(Client, [<<"zrange">>, Key, Start, End]).
