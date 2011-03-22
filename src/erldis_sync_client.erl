@@ -304,7 +304,7 @@ handle_info({tcp, Socket, Data}, State) ->
 	end;
 handle_info({tcp_closed, Socket}, State=#redis{socket=Socket}) ->
 	error_logger:warning_report([{erldis_sync_client, tcp_closed}, State]),
-	{stop, erldis_sync_client_tcp_host_socket_closed, State#redis{socket=undefined}};
+    {noreply, State#redis{socket=undefined}};
 handle_info(_Info, State) ->
 	{noreply, State}.
 

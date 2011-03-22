@@ -476,7 +476,7 @@ handle_info({tcp, Socket, Data}, State) ->
 			{noreply, NewState}
 	end;
 handle_info({tcp_closed, Socket}, State=#redis{socket=Socket}) ->
-	{stop, erldis_client_tcp_host_socket_closed, State#redis{socket=undefined}};
+	{noreply, State#redis{socket=undefined}};
 handle_info(_Info, State) ->
 	{noreply, State}.
 
