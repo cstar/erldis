@@ -161,6 +161,8 @@ zset_test() ->
 	?assertEqual(0, erldis:zcount(Client, <<"foo">>, 0, 10)),
 	?assertEqual([], erldis:zrange(Client, <<"foo">>, 0, 2)),
 	
+	?assertEqual(0, erldis:zremrangebyrank(Client, "foo", 0, 1)),
+	
 	?assertEqual(shutdown, erldis:quit(Client)).
 
 % inline_tests(Client) ->

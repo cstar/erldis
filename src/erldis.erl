@@ -229,7 +229,9 @@ zcount(Client, Key, Min, Max) ->
 zscore(Client, Key, Member) ->
 	numeric(erldis_client:sr_scall(Client, [<<"zscore">>, Key, Member])).
 
-%% TODO: zremrangebyrank
+zremrangebyrank(Client, Key, Start, End) ->
+	Cmd = [<<"zremrangebyrank">>, Key, Start, End],
+	numeric(erldis_client:sr_scall(Client, Cmd)).
 
 zremrangebyscore(Client, Key, Min, Max) ->
 	Cmd = [<<"zremrangebyscore">>, Key, Min, Max],
