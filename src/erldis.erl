@@ -254,6 +254,9 @@ hmset(Client, Key, Fields) ->
 	Args = lists:foldl(fun({K, V}, Acc) -> [K, V | Acc] end, [], Fields),
 	erldis_client:sr_scall(Client, [<<"hmset">>, Key | Args]).
 
+hmget(Client, Key, Keys) ->
+  erldis_client:scall(Client, [<<"hmget">>, Key | Keys]).
+
 hincrby(Client, Key, Field, Incr) ->
 	numeric(erldis_client:sr_scall(Client, [<<"hincrby">>, Key, Field, Incr])).
 

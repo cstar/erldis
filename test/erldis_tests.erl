@@ -65,6 +65,7 @@ hash_test() ->
 	?assertEqual(<<"value">>, erldis:hget(Client, <<"key">>, <<"field">>)),
 	?assertEqual(<<"value2">>, erldis:hget(Client, <<"key2">>, <<"field">>)),
 	?assertEqual(<<"valueK">>, erldis:hget(Client, <<"key2">>, <<"fieldK">>)),
+	?assertEqual([<<"valueK">>, <<"valueM">>, nil], erldis:hmget(Client, <<"key2">>, [<<"fieldK">>, <<"fieldM">>, <<"notThere">>])),
 	?assertEqual(20, erldis:hincrby(Client, <<"increment-key">>, <<"by-20">>, 20)),
 	?assertEqual(40, erldis:hincrby(Client, <<"increment-key">>, <<"by-20">>, 20)),
 	?assertEqual(<<"40">>, erldis:hget(Client, <<"increment-key">>, <<"by-20">>)),
