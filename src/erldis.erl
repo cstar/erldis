@@ -275,6 +275,16 @@ hvals(Client, Key) -> erldis_client:scall(Client, [<<"hvals">>, Key]).
 hgetall(Client, Key) ->
 	tuplelist(erldis_client:scall(Client, [<<"hgetall">>, Key])).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Commands operating on binary values %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+setbit(Client, Key, Offset, Value) ->
+  numeric(erldis_client:sr_scall(Client, [<<"setbit">>, Key, Offset, Value])).
+
+getbit(Client, Key, Offset) ->
+  numeric(erldis_client:sr_scall(Client, [<<"getbit">>, Key, Offset])).
+
 %%%%%%%%%%%%%
 %% Sorting %%
 %%%%%%%%%%%%%

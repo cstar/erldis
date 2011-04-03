@@ -164,6 +164,12 @@ zset_test() ->
 	
 	?assertEqual(shutdown, erldis:quit(Client)).
 
+binary_test() ->
+	{ok, Client} = erldis:connect("localhost", 6379),
+	?assertEqual(ok, erldis:flushdb(Client)),
+  ?assertEqual(0, erldis:setbit(Client, <<"bin_key">>, 7, 1)),
+  ?assertEqual(1, erldis:getbit(Client, <<"bin_key">>, 7)).
+
 % inline_tests(Client) ->
 %	  [?_assertMatch(ok, erldis:set(Client, <<"hello">>, <<"kitty!">>)),
 %	   ?_assertMatch(false, erldis:setnx(Client, <<"hello">>, <<"kitty!">>)),
