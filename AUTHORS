@@ -19,3 +19,15 @@ Eric Cestari
 tonyg
 	- BLPOP & BRPOP
 	https://bitbucket.org/tonyg/erldis/
+
+mdaguete
+ - rebar build
+
+henrygarner
+ - Redis rpoplpush support
+
+czarneckid
+ - Added zremrangebyrank zrank and zrevrank methods and tests
+
+hungryblank
+ - hmget and getbit setbit commands
