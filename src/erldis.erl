@@ -229,7 +229,9 @@ zcount(Client, Key, Min, Max) ->
 zscore(Client, Key, Member) ->
 	numeric(erldis_client:sr_scall(Client, [<<"zscore">>, Key, Member])).
 
-%% TODO: zremrangebyrank
+zremrangebyrank(Client, Key, Start, End) ->
+	Cmd = [<<"zremrangebyrank">>, Key, Start, End],
+	numeric(erldis_client:sr_scall(Client, Cmd)).
 
 zremrangebyscore(Client, Key, Min, Max) ->
 	Cmd = [<<"zremrangebyscore">>, Key, Min, Max],
@@ -254,6 +256,9 @@ hmset(Client, Key, Fields) ->
 	Args = lists:foldl(fun({K, V}, Acc) -> [K, V | Acc] end, [], Fields),
 	erldis_client:sr_scall(Client, [<<"hmset">>, Key | Args]).
 
+hmget(Client, Key, Keys) ->
+  erldis_client:scall(Client, [<<"hmget">>, Key | Keys]).
+
 hincrby(Client, Key, Field, Incr) ->
 	numeric(erldis_client:sr_scall(Client, [<<"hincrby">>, Key, Field, Incr])).
 
@@ -271,6 +276,16 @@ hvals(Client, Key) -> erldis_client:scall(Client, [<<"hvals">>, Key]).
 
 hgetall(Client, Key) ->
 	tuplelist(erldis_client:scall(Client, [<<"hgetall">>, Key])).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Commands operating on binary values %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+setbit(Client, Key, Offset, Value) ->
+  numeric(erldis_client:sr_scall(Client, [<<"setbit">>, Key, Offset, Value])).
+
+getbit(Client, Key, Offset) ->
+  numeric(erldis_client:sr_scall(Client, [<<"getbit">>, Key, Offset])).
 
 %%%%%%%%%%%%%
 %% Sorting %%

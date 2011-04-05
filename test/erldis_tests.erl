@@ -65,6 +65,7 @@ hash_test() ->
 	?assertEqual(<<"value">>, erldis:hget(Client, <<"key">>, <<"field">>)),
 	?assertEqual(<<"value2">>, erldis:hget(Client, <<"key2">>, <<"field">>)),
 	?assertEqual(<<"valueK">>, erldis:hget(Client, <<"key2">>, <<"fieldK">>)),
+	?assertEqual([<<"valueK">>, <<"valueM">>, nil], erldis:hmget(Client, <<"key2">>, [<<"fieldK">>, <<"fieldM">>, <<"notThere">>])),
 	?assertEqual(20, erldis:hincrby(Client, <<"increment-key">>, <<"by-20">>, 20)),
 	?assertEqual(40, erldis:hincrby(Client, <<"increment-key">>, <<"by-20">>, 20)),
 	?assertEqual(<<"40">>, erldis:hget(Client, <<"increment-key">>, <<"by-20">>)),
@@ -161,7 +162,15 @@ zset_test() ->
 	?assertEqual(0, erldis:zcount(Client, <<"foo">>, 0, 10)),
 	?assertEqual([], erldis:zrange(Client, <<"foo">>, 0, 2)),
 	
+	?assertEqual(0, erldis:zremrangebyrank(Client, "foo", 0, 1)),
+	
 	?assertEqual(shutdown, erldis:quit(Client)).
+
+binary_test() ->
+	{ok, Client} = erldis:connect("localhost", 6379),
+	?assertEqual(ok, erldis:flushdb(Client)),
+  ?assertEqual(0, erldis:setbit(Client, <<"bin_key">>, 7, 1)),
+  ?assertEqual(1, erldis:getbit(Client, <<"bin_key">>, 7)).
 
 multiexec_test()->	
     application:load(erldis),
