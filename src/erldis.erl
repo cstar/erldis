@@ -290,7 +290,19 @@ sort(Client, Key, Extra) when is_binary(Key), is_binary(Extra) ->
 get_all_results(Client) -> gen_server2:call(Client, get_all_results).
 
 set_pipelining(Client, Bool) -> gen_server2:cast(Client, {pipelining, Bool}).
-
+watch(Client, Keys)->
+    erldis_client:sr_scall(Client,[ <<"watch">>, Keys]).
+    
+unwatch(Client, Keys) ->
+    erldis_client:sr_scall(Client,[ <<"watch">>, Keys]).
+    
+unwatch(Client)->
+    unwatch(Client, []).
+    
+exec(Client, Watches, Fun) ->
+    watch(Client, Watches),
+    exec(Client, Fun).
+    
 exec(Client, Fun) ->
 	case erldis_client:sr_scall(Client, <<"multi">>) of
 		ok ->

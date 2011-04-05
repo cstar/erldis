@@ -163,27 +163,33 @@ zset_test() ->
 	
 	?assertEqual(shutdown, erldis:quit(Client)).
 
-% inline_tests(Client) ->
-%	  [?_assertMatch(ok, erldis:set(Client, <<"hello">>, <<"kitty!">>)),
-%	   ?_assertMatch(false, erldis:setnx(Client, <<"hello">>, <<"kitty!">>)),
-%	   ?_assertMatch(true, erldis:exists(Client, <<"hello">>)),
-%	   ?_assertMatch(true, erldis:del(Client, <<"hello">>)),
-%	   ?_assertMatch(false, erldis:exists(Client, <<"hello">>)),
-%
-%	   ?_assertMatch(true, erldis:setnx(Client, <<"hello">>, <<"kitty!">>)),
-%	   ?_assertMatch(true, erldis:exists(Client, <<"hello">>)),
-%	   ?_assertMatch("kitty!">>, erldis:get(Client, <<"hello">>)),
-%	   ?_assertMatch(true, erldis:del(Client, <<"hello">>)),
-%
-%
-%	   ?_assertMatch(1, erldis:incr(Client, <<"pippo">>))
-%	   ,?_assertMatch(2, erldis:incr(Client, <<"pippo">>))
-%	   ,?_assertMatch(1, erldis:decr(Client, <<"pippo">>))
-%	   ,?_assertMatch(0, erldis:decr(Client, <<"pippo">>))
-%	   ,?_assertMatch(-1, erldis:decr(Client, <<"pippo">>))
-%
-%	   ,?_assertMatch(6, erldis:incrby(Client, <<"pippo">>, 7))
-%	   ,?_assertMatch(2, erldis:decrby(Client, <<"pippo">>, 4))
-%	   ,?_assertMatch(-2, erldis:decrby(Client, <<"pippo">>, 4))
-%	   ,?_assertMatch(true, erldis:del(Client, <<"pippo">>))
-%	  ].
+multiexec_test()->	
+    application:load(erldis),
+    {ok, Client} = erldis_client:connect(),
+    erldis:flushdb(Client),
+    Fun = fun(C)->
+      erldis:set(C, <<"toto">>, <<"tata">>),
+      erldis:set(C, <<"toto2">>, <<"tata2">>),
+      erldis:get(C, <<"toto">>)
+    end,
+    ?assertEqual([ok, ok, <<"tata">>],erldis:exec(Client, Fun)),
+    Fun2 = fun(C)->
+      erldis:sadd(C, <<"foo">>, <<"bar">>),
+      erldis:srem(C, <<"foo">>, <<"bar">>),
+      erldis:set(C, <<"foo3">>, <<"bar3">>)
+    end,
+    ?assertEqual([true, true, ok],erldis:exec(Client, Fun2)).
+  
+watch_test()->
+    application:load(erldis),
+    {ok, Client} = erldis_client:connect(),
+    Fun2 = fun(C)->
+      erldis:sadd(C, <<"foo">>, <<"bar">>),
+      erldis:srem(C, <<"foo">>, <<"bar">>),
+      erldis:set(C, <<"foo3">>, <<"bar3">>)
+    end,
+    ?assertEqual([true, true, ok],erldis:exec(Client, Fun2)),
+    erldis:watch(Client, <<"foo">>),
+    {ok, Client2} = erldis_client:connect(),
+    erldis:sadd(Client2, <<"foo">>, <<"baz">>),
+    ?assertEqual([],erldis:exec(Client, Fun2)).
