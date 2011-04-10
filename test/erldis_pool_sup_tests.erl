@@ -3,11 +3,14 @@
 -include_lib("eunit/include/eunit.hrl").
 
 pool_test() ->
+  % kill the pool if it already exists
+  erldis_pool_sup:stop(),
+    
   ConnList = [
     {{"localhost", 6379}, 5},
     {{"localhost", 6379}, 2}
   ],
-  erldis_pool_sup:start_link(ConnList),
+  unlink(element(2, erldis_pool_sup:start_link(ConnList))),
   Pids = erldis_pool_sup:get_pids({"localhost", 6379}),
   ?assertEqual(7, length(Pids)),
   

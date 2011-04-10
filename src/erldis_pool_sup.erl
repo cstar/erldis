@@ -2,6 +2,7 @@
 
 -export([
   start_link/1,
+  stop/0,
   init/1,
   add_pid/2,
   get_pids/1,
@@ -9,7 +10,7 @@
 ]).
 
 %%
-%% Starts a supervisor that manages pools of Redis connections.
+%% @doc Starts a supervisor that manages pools of Redis connections.
 %% 
 %% ConnList is a list of {{Host, Port}, PoolSize} tuples.
 %% PoolSize connections will be opened to each {Host, Port}.
@@ -29,9 +30,21 @@ start_link(ConnList) ->
   % Start a supervisor to manage the connections
   {ok, Pid} = supervisor:start_link({local, ?MODULE}, ?MODULE, [ConnList]),
   {ok, Pid}.
+  
+stop() ->
+    case whereis(?MODULE)  of
+        undefined -> ok;
+        Pid ->
+            MonitorRef = erlang:monitor(process, Pid),
+            exit(Pid, shutdown),
+            receive 
+                _ -> ok
+            end,
+            erlang:demonitor(MonitorRef)
+    end.
 
 %%
-%% Returns the supervisor specifications for the children.
+%% @doc Returns the supervisor specifications for the children.
 %%
 init([ConnList]) ->
   % Merge the connections so that duplicate host/port pairs are combined
@@ -57,7 +70,7 @@ init([ConnList]) ->
   {ok, {{one_for_one, 20, 5}, ChildSpecs}}.
 
 %%
-%% Adds a Redis connection {Host, Port} pair and Pid into ETS.
+%% @doc Adds a Redis connection {Host, Port} pair and Pid into ETS.
 %%
 add_pid({Host, Port}, Pid) ->
   case whereis(?MODULE) of
@@ -66,13 +79,13 @@ add_pid({Host, Port}, Pid) ->
   end.
 
 %%
-%% Returns a list of Pids for the given {Host, Port} pair.
+%% @doc Returns a list of Pids for the given {Host, Port} pair.
 %%
 get_pids({Host, Port}) ->
   lists:map(fun({_K, V}) -> V end, ets:lookup(?MODULE, {Host, Port})).
   
 %%
-%% Returns a random Pid in the pool for a given {Host, Port} pair.
+%% @doc Returns a random Pid in the pool for a given {Host, Port} pair.
 %%
 get_random_pid({Host, Port}) ->
   Pids = get_pids({Host, Port}),
