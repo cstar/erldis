@@ -191,6 +191,9 @@ init([Host, Port]) ->
 	{ok, Timeout} = app_get_env(erldis, timeout, 500),
 	State = #redis{calls=queue:new(), host=Host, port=Port, timeout=Timeout, subscribers=dict:new()},
 	
+	% Add this Pid to the pool
+	erldis_pool_sup:add_pid({Host, Port}, self()),
+	
 	case connect_socket(State, once) of
 		{error, Why} -> {stop, {socket_error, Why}};
 		{ok, NewState} -> {ok, NewState}
