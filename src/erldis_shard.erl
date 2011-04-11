@@ -1,5 +1,13 @@
 %% @doc This module is used to access a sharded Redis cluster.
 %%
+%% An important thing to note about sharding is that if you change the ring,
+%% keys will be hashed on different shards. This requires a data migration. Right now 
+%% it is recommend to do pre-sharding, which means, create a large number of shards up front,
+%% and as your data set grows, move each small shard to its own dedicated box. This means that 
+%% you will not have to re-hash keys for a very long time.
+%% 
+%% See this link for more information: http://antirez.com/post/redis-presharding.html
+%%
 %% `erldis_shard:start_link([{"redis01", [{{{"127.0.0.1", 6379}, 5}, master}, {{{"127.0.0.1", 6379}, 5}, slave}, {{{"127.0.0.1", 6380}, 5}, slave}]}, {"redis02", [{{{"127.0.0.1", 6379}, 5}, master}]}]),'
 %%
 %% `erldis:get(erldis_shard:client("mykey", master), "mykey").'
