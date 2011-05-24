@@ -1,6 +1,6 @@
 {application, erldis, [
 	{description, "Erlang Redis application"},
-	{vsn, "0.3.2"},
+	{vsn, "0.4"},
 	{registered, [erldis_sup]},
 	{mod, {erldis_app, []}},
 	{applications, [kernel, stdlib]},
