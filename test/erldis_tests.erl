@@ -155,6 +155,9 @@ zset_test() ->
 	?assertEqual(1, erldis:zcount(Client, <<"foo">>, 0, 10)),
 	?assertEqual([<<"elem1">>], erldis:zrevrange(Client, "foo", 0, 1)),
 	
+	?assertEqual(1, erldis:zunionstore(Client, <<"bar">>, [<<"foo">>], <<"sum">>)),
+	?assertEqual(1, erldis:zcard(Client, "bar")),
+	?assertEqual([<<"elem1">>], erldis:zrevrange(Client, "bar", 0, 1)),
 	?assertEqual(true, erldis:zrem(Client, <<"foo">>, <<"elem1">>)),
 	?assertEqual(false, erldis:zrem(Client, <<"foo">>, <<"elem1">>)),
 	?assertEqual(0, erldis:zcard(Client, <<"foo">>)),

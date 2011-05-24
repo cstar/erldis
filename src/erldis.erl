@@ -237,7 +237,22 @@ zremrangebyscore(Client, Key, Min, Max) ->
 	Cmd = [<<"zremrangebyscore">>, Key, Min, Max],
 	numeric(erldis_client:sr_scall(Client, Cmd)).
 
-%% TODO: zunionstore, zinterstore
+zinterstore(Client, DestKey, Sources, Aggregate)->
+    zsetstore(<<"zinterstore">>, Client, DestKey, Sources, Aggregate).
+
+zunionstore(Client, DestKey, Sources, Aggregate)->
+    zsetstore(<<"zunionstore">>, Client, DestKey, Sources, Aggregate).
+
+zsetstore(Command, Client, DestKey, Sources, Aggregate)->
+    NumKeys = length(Sources),
+    {AllKeys, AllWeights} = lists:foldl(
+    fun(Key, {Keys, Weights})->
+        {[Key|Keys], [<<"1">>|Weights]};
+       ({Key, Weight}, {Keys, Weights})->
+        {[Key|Keys], [Weight|Weights]}
+    end, {[], []}, Sources),
+    Cmd = [Command,DestKey, NumKeys, AllKeys, <<"weights">>,AllWeights, <<"aggregate">>, Aggregate],
+    numeric(erldis_client:sr_scall(Client, Cmd)).
 
 %%%%%%%%%%%%%%%%%%%
 %% Hash commands %%
