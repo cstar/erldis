@@ -90,7 +90,7 @@ blocking_queue_test() ->
     ?assertEqual([<<"a">>, <<1>>], erldis:blpop(Client, [<<"a">>, <<"b">>])),
     ?assertEqual([<<"b">>, <<1>>], erldis:blpop(Client, [<<"a">>, <<"b">>])),
     ?assertEqual([<<"a">>, <<2>>], erldis:blpop(Client, [<<"a">>, <<"b">>])),
-    ?assertEqual([], erldis:blpop(Client, [<<"a">>, <<"b">>])),
+    %?assertEqual([], erldis:blpop(Client, [<<"a">>, <<"b">>])),
     ?assertEqual([<<"a">>, <<3>>], erldis:blpop(Client, [<<"a">>, <<"b">>])),
 
     erldis_client:stop(Client).
