@@ -205,3 +205,14 @@ watch_test()->
     {ok, Client2} = erldis_client:connect(),
     erldis:sadd(Client2, <<"foo">>, <<"baz">>),
     ?assertEqual([],erldis:exec(Client, Fun2)).
+    
+eval_test()->
+    application:load(erldis),
+    {ok, Client} = erldis_client:connect(),
+    ?assertEqual([42], erldis:eval(Client, <<"return 42">>,[])),
+    ?assertEqual([{error, <<"Some Error">>}], 
+        erldis:eval(Client, <<"return {err='Some Error'}">>,[])),
+    ?assertEqual([1, 2, <<"a">>, <<"ba">>],erldis:eval(Client, <<"return {1,2,'a','ba'}">>, [])),
+    erldis:set(Client, <<"martin">>, <<"sacha">>),
+    ?assertEqual([<<"sacha">>],erldis:eval(Client, <<"return redis.call('get', 'martin')">>, [])),
+    ok.
