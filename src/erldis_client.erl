@@ -187,7 +187,7 @@ start(Host, Port, Options, DB, ShouldLink) ->
 stop(Client) -> gen_server2:call(Client, disconnect).
 
 % ShouldRegister indicates if the client needs to be stores in the erldis_pool_sup ETS
-init([Host, Port, ShouldRegister]=Params) ->
+init([Host, Port, _ShouldRegister]=Params) ->
 	process_flag(trap_exit, true),
 	{ok, Timeout} = app_get_env(erldis, timeout, 500),
 	State = #redis{calls=queue:new(), host=Host, port=Port, timeout=Timeout, subscribers=dict:new()},
@@ -202,7 +202,7 @@ init([Host, Port, ShouldRegister]=Params) ->
 
 maybe_register([Host, Port, true])->
     erldis_pool_sup:add_pid({Host, Port}, self());
-maybe_register([Host, Port, false])->
+maybe_register([_Host, _Port, false])->
     ok.
 
 
