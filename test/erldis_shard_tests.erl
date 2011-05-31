@@ -30,6 +30,7 @@ shard_test() ->
     % shard
     ShardTestKey = <<"a">>,
     erldis:del(erldis_shard:client("b", master1), "b"),
+    erldis:del(erldis_shard:client("b", master1), "a"),
     erldis:set(erldis_shard:client(ShardTestKey, master), ShardTestKey, "valid"),
     ?assertEqual(<<"valid">>, erldis:get(erldis_shard:client(ShardTestKey, master), ShardTestKey)),
     ?assertEqual(nil, erldis:get(erldis_shard:client("b", master1), ShardTestKey)).
