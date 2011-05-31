@@ -215,4 +215,5 @@ eval_test()->
     ?assertEqual([1, 2, <<"a">>, <<"ba">>],erldis:eval(Client, <<"return {1,2,'a','ba'}">>, [])),
     erldis:set(Client, <<"martin">>, <<"sacha">>),
     ?assertEqual([<<"sacha">>],erldis:eval(Client, <<"return redis.call('get', 'martin')">>, [])),
+    ?assertEqual([<<"sacha">>],erldis:eval(Client, <<"return redis.call('get', KEYS[1])">>, [<<"martin">>])),
     ok.
