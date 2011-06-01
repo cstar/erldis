@@ -394,12 +394,14 @@ flushall(Client) -> erldis_client:sr_scall(Client, <<"flushall">>).
 %%%%%%%%%%%%%%%%%%%%%%%
 %% Script evaluation %%
 %%%%%%%%%%%%%%%%%%%%%%%
-
-eval(Client, Script, Keys)->
+eval(Client, Script, Keys) ->
+    eval(Client, Script, Keys, []).
+    
+eval(Client, Script, Keys, Args)->
     Len = length(Keys),
     lists:map(fun(L)->
         numeric(L)
-    end, erldis_client:scall(Client, [<<"eval">>, Script, Len, Keys])).
+    end, erldis_client:scall(Client, lists:flatten([<<"eval">>, Script, Len, Keys, Args]))).
     
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

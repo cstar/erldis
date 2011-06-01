@@ -213,7 +213,7 @@ eval_test()->
     ?assertEqual([{error, <<"Some Error">>}], 
         erldis:eval(Client, <<"return {err='Some Error'}">>,[])),
     ?assertEqual([1, 2, <<"a">>, <<"ba">>],erldis:eval(Client, <<"return {1,2,'a','ba'}">>, [])),
-    erldis:set(Client, <<"martin">>, <<"sacha">>),
+        ?assertEqual([ok],erldis:eval(Client, <<"return redis.call('set', KEYS[1], ARGV[1])">>, [<<"martin">>], [<<"sacha">>])),
     ?assertEqual([<<"sacha">>],erldis:eval(Client, <<"return redis.call('get', 'martin')">>, [])),
     ?assertEqual([<<"sacha">>],erldis:eval(Client, <<"return redis.call('get', KEYS[1])">>, [<<"martin">>])),
     ok.
