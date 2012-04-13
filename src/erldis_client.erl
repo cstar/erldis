@@ -430,21 +430,17 @@ parse_state(State, Socket, Data) ->
 			State#redis{remaining=Remaining, pstate=read};
 		{N, {read, nil}} ->
 			% reply with nil
-                        case State#redis.pstate of
-                          empty -> send_reply(State#redis{buffer=[nil]});
-                           read -> NewBuffer = [nil | State#redis.buffer],
-                                   NewState =
-                                   State#redis{remaining=N,
-                                               buffer=NewBuffer,
-                                               pstate=read},
-                                   case N of
-                                     0 -> send_reply(NewState);
-                                     _ -> NewState
-                                   end
-                        end;
-                {_, {read, 0}} when State#redis.pstate =:= empty ->
-                        % this is needed to handle single-line reply empty responses
-                        send_reply(State#redis{buffer=[]});
+			case State#redis.pstate of
+				empty -> send_reply(State#redis{buffer=[nil]});
+				read -> NewBuffer = [nil | State#redis.buffer],
+					case N of
+						0 -> send_reply(State#redis{buffer = NewBuffer});
+						_ -> State#redis{remaining=N, buffer=NewBuffer, pstate=read}
+					end
+			end;
+		{_, {read, 0}} when State#redis.pstate =:= empty ->
+			% this is needed to handle single-line reply empty responses
+			send_reply(State#redis{buffer=[]});
 		{0, {read, NBytes}} ->
 			% reply with Value added to buffer
 			Value = recv_value(Socket, NBytes),
