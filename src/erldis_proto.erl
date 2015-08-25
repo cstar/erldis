@@ -45,6 +45,8 @@ parse(_, <<"$", BulkSize/binary>>) ->
 	{read, list_to_integer(binary_to_list(BulkSize))};
 parse(empty, <<"*", MultiBulkSize/binary>>) ->
 	{hold, list_to_integer(binary_to_list(MultiBulkSize))};
+parse(read, <<"*", MultiBulkSize/binary>>) ->
+	{hold, list_to_integer(binary_to_list(MultiBulkSize))};
 parse(read, Message)->
 	convert(Message);
 parse(empty, Message) ->
